@@ -1,3 +1,6 @@
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ */
 #ifndef _AEJSON_H
 #define _AEJSON_H
 

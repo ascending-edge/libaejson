@@ -12,25 +12,21 @@
 
 #define L_TRY(expr) if(!(expr)) yyterminate()
      
-#define YYLTYPE parser_loc_t
+#define YYLTYPE aejson_parser_loc_t
      
-int yylex(YYSTYPE *foo, YYLTYPE *loc, void *scanner, struct parser *parser);
-void yyerror(YYLTYPE *loc, void *scanner, struct parser *parser,
-             const char *fmt, ...)
-     ;
+int yylex(YYSTYPE *foo, YYLTYPE *loc,
+          void *scanner, struct aejson_parser *parser);
 
+void yyerror(YYLTYPE *loc, void *scanner, struct aejson_parser *parser,
+             const char *fmt, ...);
 
 #define YY_DECL int yylex \
-		(YYSTYPE * yylval_param, YYLTYPE *loc, yyscan_t yyscanner, struct parser *parser)
+		(YYSTYPE * yylval_param, YYLTYPE *loc, yyscan_t yyscanner, \
+           struct aejson_parser *parser)
 
 #define YY_USER_ACTION loc->first_line = loc->last_line = yylineno; \
     loc->first_column = yycolumn; loc->last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
-
-     bool expand_string(struct parser *parser,
-                        const parser_loc_t *loc,
-                        const char *in, size_t in_len,
-                        char **out);
 
 %}
 
@@ -60,7 +56,7 @@ COMMENT_SINGLE_LINE \/\/.*\n
 -?{DIGITS} {
      if(sscanf(yytext, "%"SCNd64, &yylval->integer) != 1)
      {
-          parser_error_set(parser, loc, "integer scan error: %s", yytext);
+          aejson_parser_error_set(parser, loc, "integer scan error: %s", yytext);
           yyterminate();
      }
      return t_integer;
@@ -70,7 +66,7 @@ COMMENT_SINGLE_LINE \/\/.*\n
      /* simple float -xxx.xxx */
      if(sscanf(yytext, "%lg", &yylval->dbl) != 1)
      {
-          parser_error_set(parser, loc, "double scan error: %s", yytext);
+          aejson_parser_error_set(parser, loc, "double scan error: %s", yytext);
           yyterminate();
      }
      return t_float;
@@ -91,7 +87,7 @@ null {
 
 {DBL_QUOTE} {
      BEGIN(COND_STRING);
-     L_TRY(parser_string_start(parser, loc));
+     L_TRY(aejson_parser_string_start(parser, loc));
 }
 
 
@@ -124,14 +120,14 @@ null {
           abort();
           break;
      }
-     L_TRY(parser_string_add_char(parser, loc, new_char));
+     L_TRY(aejson_parser_string_add_char(parser, loc, new_char));
 }
 
 <COND_STRING>[[:print:]] {
      switch(yytext[0])
      {
      case '"':
-          L_TRY(parser_string_add_char(parser, loc, yytext[0]));
+          L_TRY(aejson_parser_string_add_char(parser, loc, yytext[0]));
           BEGIN(INITIAL);
           return t_string;
           break;
@@ -140,7 +136,7 @@ null {
           yyterminate();
           break;
      default:
-          L_TRY(parser_string_add_char(parser, loc, yytext[0]));
+          L_TRY(aejson_parser_string_add_char(parser, loc, yytext[0]));
           break;
      }
 }
@@ -157,12 +153,12 @@ null {
                      invalid);
           yyterminate();
      }
-     L_TRY(parser_string_add_char(parser, loc, uni));
+     L_TRY(aejson_parser_string_add_char(parser, loc, uni));
 }
 
 
 {COMMENT_SINGLE_LINE} {
-     L_TRY(parser_comment_add(parser, loc, &yytext[2]));
+     L_TRY(aejson_parser_comment_add(parser, loc, &yytext[2]));
 }
 
 [ \t\n] {

@@ -1,26 +1,30 @@
-#ifndef _VALUE_H
-#define _VALUE_H
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ */
+#ifndef _AEJSON_VALUE_H
+#define _AEJSON_VALUE_H
 
 #include <stdio.h>
 
 #include <ae/ae.h>
 
 
-typedef enum value_type
+typedef enum aejson_value_type
 {
-     VALUE_TYPE_STRING = 0,
-     VALUE_TYPE_DOUBLE,
-     VALUE_TYPE_INTEGER,
-     VALUE_TYPE_OBJECT,
-     VALUE_TYPE_ARRAY,
-     VALUE_TYPE_BOOLEAN,
-     VALUE_TYPE_NULL,
-     VALUE_TYPE_ENDMARKER,
-} value_type_t;
+     AEJSON_VALUE_TYPE_STRING = 0,
+     AEJSON_VALUE_TYPE_DOUBLE,
+     AEJSON_VALUE_TYPE_INTEGER,
+     AEJSON_VALUE_TYPE_OBJECT,
+     AEJSON_VALUE_TYPE_ARRAY,
+     AEJSON_VALUE_TYPE_BOOLEAN,
+     AEJSON_VALUE_TYPE_NULL,
+     AEJSON_VALUE_TYPE_ENDMARKER,
+} aejson_value_type_t;
 
-typedef struct value
+
+typedef struct aejson_value
 {
-     value_type_t type;
+     aejson_value_type_t type;
      union {
           char *str;
           double dbl;
@@ -29,15 +33,17 @@ typedef struct value
           ae_ptrarray_t *array;
           bool boolean;
      };
-} value_t;
+} aejson_value_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
      
-     bool value_init(ae_res_t *e, value_t *self, value_type_t t);
+     bool aejson_value_init(ae_res_t *e, aejson_value_t *self,
+                            aejson_value_type_t t);
 
-     void value_dump(const value_t *self, int depth, FILE *out);
+     void aejson_value_dump(const aejson_value_t *self,
+                            int depth, FILE *out);
 #ifdef __cplusplus
 }
 #endif

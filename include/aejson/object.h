@@ -1,3 +1,6 @@
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ */
 #ifndef _AEJSON_OBJECT_H
 #define _AEJSON_OBJECT_H
 
@@ -5,7 +8,7 @@
 
 #include <ae/ae.h>
 
-#include "pair.h"
+#include <aejson/pair.h>
 
 typedef struct aejson_object
 {
@@ -19,9 +22,11 @@ extern "C" {
      bool aejson_object_init(ae_res_t *e, aejson_object_t *self,
                              ae_pool_t *pool);
 
-     bool aejson_object_pair_add(ae_res_t *e, aejson_object_t *self, pair_t *p);
+     bool aejson_object_pair_add(ae_res_t *e, aejson_object_t *self,
+                                 aejson_pair_t *p);
 
-     void aejson_object_dump(const aejson_object_t *self, int depth, FILE *out);
+     void aejson_object_dump(const aejson_object_t *self,
+                             int depth, FILE *out);
 
 #ifdef __cplusplus
 }

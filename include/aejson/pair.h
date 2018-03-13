@@ -1,21 +1,25 @@
-#ifndef _PAIR_H
-#define _PAIR_H
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ */
+#ifndef _AEJSON_PAIR_H
+#define _AEJSON_PAIR_H
 
 #include <stdio.h>
 
-#include "value.h"
+#include <aejson/value.h>
 
-typedef struct pair
+typedef struct aejson_pair
 {
      const char *name;
-     value_t *value;
-} pair_t;
+     aejson_value_t *value;
+} aejson_pair_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-     void pair_dump(const pair_t *self, int depth, FILE *out);
+     void aejson_pair_dump(const aejson_pair_t *self,
+                           int depth, FILE *out);
 
 #ifdef __cplusplus
 }

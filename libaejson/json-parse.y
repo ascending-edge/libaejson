@@ -10,7 +10,7 @@
 #include <aejson/object.h>
      
 #define YYERROR_VERBOSE
-#define YYLTYPE parser_loc_t     
+#define YYLTYPE aejson_parser_loc_t     
 
 #define P_TRY(expr) if(!(expr)) { parser->is_err = true; YYABORT; }
 }
@@ -19,22 +19,22 @@
      double dbl;
      int64_t integer;
      bool boolean;
-     struct value *value;
-     struct pair *pair;
+     struct aejson_value *value;
+     struct aejson_pair *pair;
      struct aejson_object *object;
      struct ae_ptrarray *array;
 }
 %{
-struct parser;     
+struct aejson_parser;     
      
 	int yylex(YYSTYPE *foo,
                YYLTYPE *loc,
                void *scanner,
-               struct parser *parser);
+               struct aejson_parser *parser);
 	void yyerror(YYLTYPE *loc,
-           void *scanner,
-           struct parser *parser,
-           const char *fmt, ...)
+                  void *scanner,
+                  struct aejson_parser *parser,
+                  const char *fmt, ...)
 #if __GNUC__
           __attribute__ ((format (printf, 4, 5)))
 #endif
@@ -48,9 +48,9 @@ struct parser;
 %define parse.error verbose
 %locations
 %lex-param {void *scanner}
-%lex-param {struct parser *parser}
+%lex-param {struct aejson_parser *parser}
 %parse-param {void *scanner}
-%parse-param {struct parser *parser}
+%parse-param {struct aejson_parser *parser}
 
 %token t_true
 %token t_false
@@ -142,44 +142,44 @@ value
 : t_string
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(value_init(parser->e, $$, VALUE_TYPE_STRING));
+     P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_STRING));
      $$->str = $1;
 }
 | t_float
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(value_init(parser->e, $$, VALUE_TYPE_DOUBLE));
+     P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_DOUBLE));
      $$->dbl = $1;
 }
 | t_integer
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(value_init(parser->e, $$, VALUE_TYPE_INTEGER));
+     P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_INTEGER));
      $$->integer = $1;
 }
 | object
 {
      printf("object value\n");
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(value_init(parser->e, $$, VALUE_TYPE_OBJECT));
+     P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_OBJECT));
      $$->object = $1;
 }
 | array
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(value_init(parser->e, $$, VALUE_TYPE_ARRAY));
+     P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_ARRAY));
      $$->array = $1;
 }
 | boolean
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(value_init(parser->e, $$, VALUE_TYPE_BOOLEAN));
+     P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_BOOLEAN));
      $$->boolean = $1;
 }
 | t_null
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(value_init(parser->e, $$, VALUE_TYPE_NULL));
+     P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_NULL));
 }
 ;
 
@@ -198,12 +198,13 @@ boolean
 
 %%
 #include <stdio.h>
-void yyerror(YYLTYPE *loc, void *scanner, struct parser *self,
+void yyerror(YYLTYPE *loc, void *scanner, struct aejson_parser *self,
            const char *fmt, ...)
 {
      char msg[2048];
      AE_STR_FROM_ARGS(msg, sizeof(msg), fmt);
-     parser_error_set(self, loc,
-                      "%d:%d %s", loc->first_line, loc->first_column, msg);
+     aejson_parser_error_set(self, loc,
+                             "%d:%d %s",
+                             loc->first_line, loc->first_column, msg);
 }
 

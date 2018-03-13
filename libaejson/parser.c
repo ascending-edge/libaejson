@@ -6,14 +6,15 @@ int yylex_init(void**);
 int yylex_destroy(void*);
 
 
-bool parser_init(ae_res_t *e, parser_t *self)
+bool aejson_parser_init(ae_res_t *e, aejson_parser_t *self)
 {
      return true;
 }
 
 
-void parser_error_set(parser_t *self, const parser_loc_t *loc,
-                      const char *fmt, ...)
+void aejson_parser_error_set(aejson_parser_t *self,
+                             const aejson_parser_loc_t *loc,
+                             const char *fmt, ...)
 {
      char msg[2048];
      AE_STR_FROM_ARGS(msg, sizeof(msg), fmt);
@@ -22,8 +23,8 @@ void parser_error_set(parser_t *self, const parser_loc_t *loc,
 }
 
 
-bool parser_parse(ae_res_t *e, parser_t *self, ae_pool_t *pool,
-                  aejson_object_t **out)
+bool aejson_parser_parse(ae_res_t *e, aejson_parser_t *self,
+                         ae_pool_t *pool, aejson_object_t **out)
 {
      self->pool = pool;
      self->e = e;
@@ -42,15 +43,17 @@ bool parser_parse(ae_res_t *e, parser_t *self, ae_pool_t *pool,
 }
 
 
-bool parser_comment_add(parser_t *self,
-                        const parser_loc_t  *loc,
-                        const char *comment)
+bool aejson_parser_comment_add(aejson_parser_t *self,
+                               const aejson_parser_loc_t  *loc,
+                               const char *comment)
 {
      /* printf("ignoring comment: %s\n", comment); */
      return true;
 }
 
-bool parser_string_start(parser_t *self, const parser_loc_t *loc)
+
+bool aejson_parser_string_start(aejson_parser_t *self,
+                                const aejson_parser_loc_t *loc)
 {
      if(self->string_literal)
      {
@@ -64,8 +67,10 @@ bool parser_string_start(parser_t *self, const parser_loc_t *loc)
      return true;
 }
 
-bool parser_string_end(parser_t *self, const parser_loc_t *loc,
-                       char **out)
+
+bool aejson_parser_string_end(aejson_parser_t *self,
+                              const aejson_parser_loc_t *loc,
+                              char **out)
 {
      if(!self->string_literal)
      {
@@ -76,9 +81,10 @@ bool parser_string_end(parser_t *self, const parser_loc_t *loc,
      self->string_literal_len = 0;
      return true;
 }
-     
-bool parser_string_add_char(parser_t *self,
-                            const parser_loc_t *loc, char c)
+
+
+bool aejson_parser_string_add_char(aejson_parser_t *self,
+                                   const aejson_parser_loc_t *loc, char c)
 {
      /* Do we need to resize? */
      if(self->string_literal_len == self->string_literal_max - 1)

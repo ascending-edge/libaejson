@@ -1,20 +1,23 @@
-#ifndef _PARSER_H
-#define _PARSER_H
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ */
+#ifndef _AEJSON_PARSER_H
+#define _AEJSON_PARSER_H
 
 #include <ae/ae.h>
 
-#include "object.h"
+#include <aejson/object.h>
 
-typedef struct parser_loc
+typedef struct aejson_parser_loc
 {
      int first_line;
      int first_column;
      int last_line;
      int last_column;
-} parser_loc_t;
+} aejson_parser_loc_t;
 
 
-typedef struct parser
+typedef struct aejson_parser
 {
      ae_res_t *e;
      ae_pool_t *pool;
@@ -25,36 +28,35 @@ typedef struct parser
      size_t string_literal_max;
      size_t string_literal_len;
      char *string_literal;
-} parser_t;
+} aejson_parser_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-     bool parser_init(ae_res_t *e, parser_t *self);
-     bool parser_parse(ae_res_t *e,
-                       parser_t *self,
-                       ae_pool_t *pool,
-                       aejson_object_t **out);
-
+     bool aejson_parser_init(ae_res_t *e, aejson_parser_t *self);
+     bool aejson_parser_parse(ae_res_t *e, aejson_parser_t *self,
+                              ae_pool_t *pool, aejson_object_t **out);
      
-     bool parser_comment_add(parser_t *self,
-                             const parser_loc_t  *loc,
-                             const char *comment);
-     void parser_error_set(parser_t *self,
-                           const parser_loc_t  *loc,
-                           const char *fmt, ...)
+     bool aejson_parser_comment_add(aejson_parser_t *self,
+                                    const aejson_parser_loc_t  *loc,
+                                    const char *comment);
+     void aejson_parser_error_set(aejson_parser_t *self,
+                                  const aejson_parser_loc_t  *loc,
+                                  const char *fmt, ...)
 #if __GNUC__
           __attribute__ ((format (printf, 3, 4)))
 #endif
           ;
 
-     bool parser_string_start(parser_t *self, const parser_loc_t *loc);
-     bool parser_string_end(parser_t *self, const parser_loc_t *loc,
-                            char **out);
+     bool aejson_parser_string_start(aejson_parser_t *self,
+                                     const aejson_parser_loc_t *loc);
+     bool aejson_parser_string_end(aejson_parser_t *self,
+                                   const aejson_parser_loc_t *loc,
+                                   char **out);
      
-     bool parser_string_add_char(parser_t *self,
-                                 const parser_loc_t *loc, char c);
+     bool aejson_parser_string_add_char(aejson_parser_t *self,
+                                        const aejson_parser_loc_t *loc, char c);
                               
      
 
