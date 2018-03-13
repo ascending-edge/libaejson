@@ -20,6 +20,10 @@ libaejson/json-parse.c
 libaejson/json-parse.h
 libaejson/json-scan.c
 libaejson/json-scan.h
+libaejson/query-parse.c
+libaejson/query-parse.h
+libaejson/query-scan.c
+libaejson/query-scan.h
 libtool
 ltmain.sh
 m4/

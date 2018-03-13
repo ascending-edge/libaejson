@@ -4,17 +4,15 @@ BUILT_SOURCES = \
 	json-parse.h \
 	json-parse.c \
 	json-scan.c
-
-# \
-# 	query-parse.h \
-# 	query-parse.c \
-# 	query-scan.h \
-# 	query-scan.c 
+	query-parse.h \
+	query-parse.c \
+	query-scan.h \
+	query-scan.c 
 
 lib_LTLIBRARIES = libaejson.la
 
-# query-scan.c: query-scan.l
-# query-scan.h: query-scan.c
+query-scan.c: query-scan.l
+query-scan.h: query-scan.c
 
 json-scan.c: json-scan.l
 parser.c: json-scan.c
@@ -32,10 +30,13 @@ libaejson_la_CPPFLAGS = \
 libaejson_la_SOURCES = \
 	json-parse.y \
 	json-scan.l \
+	query-parse.y \
+	query-scan.l \
 	parser.c \
 	value.c \
 	object.c \
-	pair.c
+	pair.c \
+	query.c
 
 #headerdir = $(prefix)/include/aejson
 #header_DATA = ../include/aejson/aejson.h

@@ -4,21 +4,28 @@
 
 static bool internal_main(ae_res_t *e)
 {
-     aejson_parser_t parser;
-     AE_MEM_CLEAR(&parser);
-     AE_TRY(aejson_parser_init(e, &parser));
 
      ae_pool_t pool;
      AE_MEM_CLEAR(&pool);
      AE_TRY(ae_pool_init(e, &pool, 1024*1024 * 5));
 
-     aejson_object_t *result = NULL;
-     bool res = aejson_parser_parse(e, &parser, &pool, &result);
+     /* aejson_parser_t parser; */
+     /* AE_MEM_CLEAR(&parser); */
+     /* AE_TRY(aejson_parser_init(e, &parser)); */
+     
+     /* aejson_object_t *result = NULL; */
+     /* bool res = aejson_parser_parse(e, &parser, &pool, &result); */
 
-     if(res)
-     {
-          aejson_object_dump(result, 0, stdout);
-     }
+     /* if(res) */
+     /* { */
+     /*      aejson_object_dump(result, 0, stdout); */
+     /* } */
+
+     aejson_query_t query;
+     AE_MEM_CLEAR(&query);
+     AE_TRY(aejson_query_init(e, &query));
+
+     bool res = aejson_query_parse(e, &query, &pool);
      
      if(!ae_pool_uninit(e, &pool))
      {

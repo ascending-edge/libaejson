@@ -7,6 +7,7 @@
 #include <aejson/object.h>
 #include <aejson/pair.h>
 #include <aejson/parser.h>
+#include <aejson/query.h>
 #include <aejson/value.h>
 
 #ifdef __cplusplus

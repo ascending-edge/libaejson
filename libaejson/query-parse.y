@@ -1,32 +1,36 @@
 %code top {
+#include <stdio.h>
 #include <ae/ae.h>
-#include <aejson/parser.h>     
-#define YYERROR_VERBOSE
-#define YYLTYPE aejson_parser_loc_t     
-#define P_TRY(expr) if(!(expr)) { YYABORT; }
+
+#include <aejson/parser.h>
+
 struct aejson_query;
      
+#define QERROR_VERBOSE
+#define QLTYPE aejson_parser_loc_t     
+
+#define P_TRY(expr) if(!(expr)) { YYABORT; }
 }
 %union {
      int64_t integer;
+     char *str;
 }
 
 %{
 struct aejson_query;
      
-     int yylex(YYSTYPE *foo,
-               YYLTYPE *loc,
-               void *scanner,
-               struct aejson_query *parser);
-	void yyerror(YYLTYPE *loc,
-                  void *scanner,
-                  struct aejson_query *parser,
-                  const char *fmt, ...)
+	int qlex(QSTYPE *foo,
+              QLTYPE *loc,
+              void *scanner,
+              struct aejson_query *parser);
+	void qerror(QLTYPE *loc,
+                 void *scanner,
+                 struct aejson_query *parser,
+                 const char *fmt, ...)
 #if __GNUC__
           __attribute__ ((format (printf, 4, 5)))
 #endif
           ;
-     
 %}
 %define api.prefix {q}
 %define api.pure full
@@ -41,23 +45,38 @@ struct aejson_query;
 %token t_index
 %token t_string
 
+%type <str> t_string
+%type <integer> t_index
+
 %% 
 
 query
 : node
+{
+     printf("query with PLAIN node\n");
+}
 | query '.' node
+{
+     printf("query with node\n");
+}
 ;
 
 node
 : t_string
+{
+     printf("node string: %s\n", $1);
+}
 | t_string '[' t_index ']'
+{
+     printf("node with index: %s:%d\n", $1, $3);
+}
 ;
 
 
 
 %%
 #include <stdio.h>
-void yyerror(YYLTYPE *loc, void *scanner, struct aejson_query *self,
+void qerror(QLTYPE *loc, void *scanner, struct aejson_query *self,
            const char *fmt, ...)
 {
      char msg[2048];

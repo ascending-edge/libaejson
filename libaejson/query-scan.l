@@ -5,23 +5,42 @@
 %option reentrant
 %option bison-bridge
 %option yylineno
+%option prefix="q"
+%option outfile="query-scan.c"
 %{
 #include <ae/ae.h>
 #include <aejson/parser.h>
 struct aejson_query;
 #include "query-parse.h"
 
+#define QLTYPE aejson_parser_loc_t     
+
+void qerror(QLTYPE *loc, void *scanner, struct aejson_query *self,
+            const char *fmt, ...);
+
+
+/* Substitute the type names.  */
+#define YYSTYPE         QSTYPE
+#define YYLTYPE         QLTYPE
+/* Substitute the variable and function names.  */
+#define yyparse         qparse
+#define yylex           qlex
+#define yyerror         qerror
+#define yydebug         qdebug
+#define yynerrs         qnerrs
+
+
 #define L_TRY(expr) if(!(expr)) yyterminate()
      
-#define YYLTYPE aejson_parser_loc_t
+#define QLTYPE aejson_parser_loc_t
 
-int yylex(YYSTYPE *foo, YYLTYPE *loc,
+int jlex(QSTYPE *foo, QLTYPE *loc,
           void *scanner, struct aejson_query *parser);
 
-void yyerror(YYLTYPE *loc, void *scanner, struct aejson_query *parser,
+void jerror(QLTYPE *loc, void *scanner, struct aejson_query *parser,
              const char *fmt, ...);
 
-#define YY_DECL int yylex \
+#define YY_DECL int qlex \
 		(YYSTYPE * yylval_param, YYLTYPE *loc, yyscan_t yyscanner, \
            struct aejson_query *parser)
 
@@ -48,10 +67,20 @@ INDEX {INTEGER}|\*
      {
           yylval->integer = -1;
      }
-     yylval->integer = 0;
+     else
+     {
+          if(sscanf(yytext, "%d", &yylval->integer) != 1)
+          {
+               yyterminate();
+          }
+     }
      return t_index;
 }
 
+[[:alnum:]]+ {
+     yylval->str = strdup(yytext);
+     return t_string;
+}
 
 . {
      /* process default here */

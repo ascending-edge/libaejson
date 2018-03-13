@@ -1,0 +1,6 @@
+/* wtf */
+{
+    "first":42,
+    "second\u00zzzz":43,
+    "array":[1,2,3,4,5]
+}
