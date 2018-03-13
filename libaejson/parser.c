@@ -2,8 +2,8 @@
 
 #include "json-parse.h"
 
-int yylex_init(void**);
-int yylex_destroy(void*);
+int jlex_init(void**);
+int jlex_destroy(void*);
 
 
 bool aejson_parser_init(ae_res_t *e, aejson_parser_t *self)
@@ -19,7 +19,6 @@ void aejson_parser_error_set(aejson_parser_t *self,
      char msg[2048];
      AE_STR_FROM_ARGS(msg, sizeof(msg), fmt);
      ae_res_err(self->e, "%s", msg);
-     self->is_err = true;
 }
 
 
@@ -28,18 +27,15 @@ bool aejson_parser_parse(ae_res_t *e, aejson_parser_t *self,
 {
      self->pool = pool;
      self->e = e;
-     self->is_err = false;
+     self->result = NULL;
      
      void* scanner;
-     yylex_init(&scanner);
+     jlex_init(&scanner);
 
-     if(yyparse(scanner, self) != 0)
-     {
-          self->is_err = true;
-     }
+     jparse(scanner, self);
+     jlex_destroy(scanner);     
      *out = self->result;
-     yylex_destroy(scanner);
-     return !self->is_err;
+     return self->result != NULL;
 }
 
 

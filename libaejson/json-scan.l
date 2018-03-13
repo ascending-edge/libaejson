@@ -5,26 +5,39 @@
 %option reentrant
 %option bison-bridge
 %option yylineno
+%option prefix="j"
+%option outfile="json-scan.c"
 %{
 #include <ae/ae.h>
 #include <aejson/parser.h>
 #include "json-parse.h"
 
+/* Substitute the type names.  */
+#define YYSTYPE         JSTYPE
+#define YYLTYPE         JLTYPE
+/* Substitute the variable and function names.  */
+#define yyparse         jparse
+#define yylex           jlex
+#define yyerror         jerror
+#define yydebug         jdebug
+#define yynerrs         jnerrs
+
+      
 #define L_TRY(expr) if(!(expr)) yyterminate()
      
-#define YYLTYPE aejson_parser_loc_t
+#define JLTYPE aejson_parser_loc_t
      
-int yylex(YYSTYPE *foo, YYLTYPE *loc,
-          void *scanner, struct aejson_parser *parser);
+/* int jlex(JSTYPE *foo, JLTYPE *loc, */
+/*           void *scanner, struct aejson_parser *parser); */
 
-void yyerror(YYLTYPE *loc, void *scanner, struct aejson_parser *parser,
+void jerror(JLTYPE *loc, void *scanner, struct aejson_parser *parser,
              const char *fmt, ...);
 
-#define YY_DECL int yylex \
-		(YYSTYPE * yylval_param, YYLTYPE *loc, yyscan_t yyscanner, \
+#define YY_DECL int jlex \
+		(JSTYPE * yylval_param, JLTYPE *loc, yyscan_t yyscanner, \
            struct aejson_parser *parser)
 
-#define YY_USER_ACTION loc->first_line = loc->last_line = yylineno; \
+#define YY_USER_ACTION loc->first_line = loc->last_line = yylineno;\
     loc->first_column = yycolumn; loc->last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
 
@@ -44,6 +57,7 @@ DBL_QUOTE \"
 CTRL [\{\}\[\],\:]
 
 COMMENT_SINGLE_LINE \/\/.*\n
+COMMENT_MULTI_LINE \/\*.*\*\/
 
 %x COND_STRING
 %%
@@ -127,12 +141,12 @@ null {
      switch(yytext[0])
      {
      case '"':
-          L_TRY(aejson_parser_string_add_char(parser, loc, yytext[0]));
           BEGIN(INITIAL);
+          L_TRY(aejson_parser_string_end(parser, loc, &yylval->str));
           return t_string;
           break;
      case '\n':
-          yyerror(loc, yyscanner, parser, "scan error detected");
+          jerror(loc, yyscanner, parser, "scan error detected");
           yyterminate();
           break;
      default:
@@ -140,6 +154,7 @@ null {
           break;
      }
 }
+
 
 <COND_STRING>\\u{HEXCHAR}{HEXCHAR}{HEXCHAR}{HEXCHAR} {
      uint16_t uni = 0;
@@ -158,7 +173,11 @@ null {
 
 
 {COMMENT_SINGLE_LINE} {
-     L_TRY(aejson_parser_comment_add(parser, loc, &yytext[2]));
+     L_TRY(aejson_parser_comment_add(parser, loc, yytext));
+}
+
+{COMMENT_MULTI_LINE} {
+     L_TRY(aejson_parser_comment_add(parser, loc, yytext));
 }
 
 [ \t\n] {
@@ -167,7 +186,7 @@ null {
 
 . {
      /* process default here */
-     yyerror(loc, yyscanner, parser, "scan error detected");
+     jerror(loc, yyscanner, parser, "scan error detected");
      yyterminate();
 }
 

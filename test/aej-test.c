@@ -14,7 +14,11 @@ static bool internal_main(ae_res_t *e)
 
      aejson_object_t *result = NULL;
      bool res = aejson_parser_parse(e, &parser, &pool, &result);
-     aejson_object_dump(result, 0, stdout);
+
+     if(res)
+     {
+          aejson_object_dump(result, 0, stdout);
+     }
      
      if(!ae_pool_uninit(e, &pool))
      {
@@ -33,10 +37,10 @@ int main(int argc, char *argv[])
       * enabled this will be set back to defaults. */
      openlog(NULL, LOG_PERROR, LOG_USER);
      /* Default to a few levels, turn on all if debug is enabled. */
-     g_ae_log.mask =
-          AE_LOG_LEVEL_INFO
-          | AE_LOG_LEVEL_WARN
-          | AE_LOG_LEVEL_ERR;
+     g_ae_log.mask = 0xff;
+          /* AE_LOG_LEVEL_INFO */
+          /* | AE_LOG_LEVEL_WARN */
+          /* | AE_LOG_LEVEL_ERR; */
 
      if(!ae_global_init(&e, NULL, NULL))
      {

@@ -1,12 +1,23 @@
 AM_YFLAGS=-d
 AM_LFLAGS=--header-file=json-scan.h
-BUILT_SOURCES = json-parse.h json-parse.c json-scan.h json-scan.c
+BUILT_SOURCES = \
+	json-parse.h \
+	json-parse.c \
+	json-scan.c
+
+# \
+# 	query-parse.h \
+# 	query-parse.c \
+# 	query-scan.h \
+# 	query-scan.c 
 
 lib_LTLIBRARIES = libaejson.la
 
+# query-scan.c: query-scan.l
+# query-scan.h: query-scan.c
+
 json-scan.c: json-scan.l
-json-scan.h: json-scan.c
-parser.c: json-scan.h
+parser.c: json-scan.c
 
 
 libaejson_la_LDFLAGS = \
@@ -15,6 +26,7 @@ libaejson_la_LDFLAGS = \
 	-lae0
 
 libaejson_la_CPPFLAGS = \
+	-g -Wall -std=gnu99 \
 	-I ../include/
 
 libaejson_la_SOURCES = \
@@ -29,4 +41,6 @@ libaejson_la_SOURCES = \
 #header_DATA = ../include/aejson/aejson.h
 
 clean-local:
-	rm -rf json-scan.c json-scan.h json-parse.c json-parse.h
+	rm -rf \
+	json-scan.c json-scan.h json-parse.c json-parse.h \
+	query-scan.c query-scan.h query-parse.c query-parse.h	

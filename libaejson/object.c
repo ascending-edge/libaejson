@@ -33,7 +33,7 @@ void aejson_object_dump(const aejson_object_t *self,
      for(size_t i=0; i<self->members.len; ++i)
      {
           const aejson_pair_t *p = ae_ptrarray_at(&self->members, i);
-          pair_dump(p, depth+1, out);
+          aejson_pair_dump(p, depth+1, out);
      }
      fprintf(out, "%s}\n", pad);
 }

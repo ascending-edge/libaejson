@@ -9,10 +9,10 @@
 #include <aejson/pair.h>
 #include <aejson/object.h>
      
-#define YYERROR_VERBOSE
-#define YYLTYPE aejson_parser_loc_t     
+#define JERROR_VERBOSE
+#define JLTYPE aejson_parser_loc_t     
 
-#define P_TRY(expr) if(!(expr)) { parser->is_err = true; YYABORT; }
+#define P_TRY(expr) if(!(expr)) { YYABORT; }
 }
 %union {
 	char *str;
@@ -27,23 +27,22 @@
 %{
 struct aejson_parser;     
      
-	int yylex(YYSTYPE *foo,
-               YYLTYPE *loc,
-               void *scanner,
-               struct aejson_parser *parser);
-	void yyerror(YYLTYPE *loc,
-                  void *scanner,
-                  struct aejson_parser *parser,
-                  const char *fmt, ...)
+	int jlex(JSTYPE *foo,
+              JLTYPE *loc,
+              void *scanner,
+              struct aejson_parser *parser);
+	void jerror(JLTYPE *loc,
+                 void *scanner,
+                 struct aejson_parser *parser,
+                 const char *fmt, ...)
 #if __GNUC__
           __attribute__ ((format (printf, 4, 5)))
 #endif
           ;
 
 %}
-
-
 /* %define api.value.type {union foo} */
+%define api.prefix {j}
 %define api.pure full
 %define parse.error verbose
 %locations
@@ -69,6 +68,7 @@ struct aejson_parser;
 %type <object> object members
 %type <array> array elements
 
+%start object
 %% /* The grammar follows.  */
 
 
@@ -77,13 +77,13 @@ object
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      parser->result = $$;
-     printf("empty object\n");     
+     printf("empty object: %p\n", $$);
 }
 | '{' members '}'
 {
      $$ = $2;
      parser->result = $$;
-     printf("populated object\n");
+     printf("populated object: %p\n", $$);
 }
 ;
 
@@ -100,9 +100,12 @@ pair
 members
 : pair
 {
+     printf("members:\n");
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      P_TRY(aejson_object_init(parser->e, $$, parser->pool));
      P_TRY(aejson_object_pair_add(parser->e, $$, $1));
+     printf("members:\n");
+     
 }
 | members ',' pair
 {
@@ -198,7 +201,7 @@ boolean
 
 %%
 #include <stdio.h>
-void yyerror(YYLTYPE *loc, void *scanner, struct aejson_parser *self,
+void jerror(JLTYPE *loc, void *scanner, struct aejson_parser *self,
            const char *fmt, ...)
 {
      char msg[2048];

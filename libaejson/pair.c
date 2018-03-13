@@ -1,8 +1,8 @@
 #include <aejson/pair.h>
 #include <alloca.h>
 
-void pair_dump(const aejson_pair_t *self,
-               int depth, FILE *out)
+void aejson_pair_dump(const aejson_pair_t *self,
+                      int depth, FILE *out)
 {
      char *pad = alloca(depth+1);
      memset(pad, '\t', depth);

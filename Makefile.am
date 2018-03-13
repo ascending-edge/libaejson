@@ -1,6 +1,6 @@
 NAME = aejson
 LIBNAME = libaejson
-AM_CFLAGS = -Wall -std=gnu99
+AM_CFLAGS = -Wall -std=gnu99 -g
 SUBDIRS = $(LIBNAME) test
 
 .PHONY: source-release

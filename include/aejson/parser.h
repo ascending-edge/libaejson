@@ -21,7 +21,6 @@ typedef struct aejson_parser
 {
      ae_res_t *e;
      ae_pool_t *pool;
-     bool is_err;
 
      aejson_object_t *result;
 
