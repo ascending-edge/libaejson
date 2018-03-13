@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# if-start depends on libap2200 and libae
+
+LIBS='libae'
+
+cflags()
+{
+    for l in $*; do
+        echo -n -I$(realpath "../$l/include") " "
+    done
+}
+
+ldflags()
+{
+    for l in $*; do
+        echo -n -L$(realpath "../$l/$l/.libs") " "
+    done
+}
+
+export CFLAGS=$(cflags $LIBS)
+export LDFLAGS=$(ldflags $LIBS)
+./configure 

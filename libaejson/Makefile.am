@@ -1,0 +1,32 @@
+AM_YFLAGS=-d
+AM_LFLAGS=--header-file=json-scan.h
+BUILT_SOURCES = json-parse.h json-parse.c json-scan.h json-scan.c
+
+lib_LTLIBRARIES = libaejson.la
+
+json-scan.c: json-scan.l
+json-scan.h: json-scan.c
+parser.c: json-scan.h
+
+
+libaejson_la_LDFLAGS = \
+	-no-undefined \
+	-version $(libaejson_MAJOR):$(libaejson_MINOR):$(libaejson_AGE) \
+	-lae0
+
+libaejson_la_CPPFLAGS = \
+	-I ../include/
+
+libaejson_la_SOURCES = \
+	json-parse.y \
+	json-scan.l \
+	parser.c \
+	value.c \
+	object.c \
+	pair.c
+
+#headerdir = $(prefix)/include/aejson
+#header_DATA = ../include/aejson/aejson.h
+
+clean-local:
+	rm -rf json-scan.c json-scan.h json-parse.c json-parse.h
