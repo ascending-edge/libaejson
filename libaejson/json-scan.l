@@ -1,4 +1,5 @@
  /* -*-c-*- */
+ /* Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved */
 %option noyywrap
 %option noinput
 %option nounput

@@ -1,5 +1,7 @@
 /**
  * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ *
+ * Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved
  * 
  * a.b.c.d[x]
  */

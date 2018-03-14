@@ -1,5 +1,7 @@
 /**
  * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ *
+ * Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved 
  */
 #ifndef _AEJSON_VALUE_H
 #define _AEJSON_VALUE_H

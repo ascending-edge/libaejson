@@ -1,3 +1,4 @@
+ /* Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved */
 %code top {
 #include <stdio.h>
 #include <ae/ae.h>

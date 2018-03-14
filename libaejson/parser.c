@@ -1,3 +1,9 @@
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ * 
+ * Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved
+ * 
+ */
 #include <aejson/parser.h>
 
 #include "json-parse.h"

@@ -1,3 +1,8 @@
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ * 
+ * Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved
+ */
 #include <aejson/value.h>
 
 #include <inttypes.h>
