@@ -10,6 +10,7 @@
 %option outfile="json-scan.c"
 %{
 #include <ae/ae.h>
+#include <aejson/loc.h>
 #include <aejson/parser.h>
 #include "json-parse.h"
 
@@ -26,7 +27,7 @@
       
 #define L_TRY(expr) if(!(expr)) yyterminate()
      
-#define JLTYPE aejson_parser_loc_t
+#define JLTYPE aejson_loc_t
      
 /* int jlex(JSTYPE *foo, JLTYPE *loc, */
 /*           void *scanner, struct aejson_parser *parser); */
@@ -38,10 +39,10 @@ void jerror(JLTYPE *loc, void *scanner, struct aejson_parser *parser,
 		(JSTYPE * yylval_param, JLTYPE *loc, yyscan_t yyscanner, \
            struct aejson_parser *parser)
 
-#define YY_USER_ACTION loc->first_line = loc->last_line = yylineno;\
-    loc->first_column = yycolumn; loc->last_column = yycolumn + yyleng - 1; \
-    yycolumn += yyleng;
-
+/* #define YY_USER_ACTION loc->first_line = loc->last_line = yylineno;\ */
+/*     loc->first_column = yycolumn; loc->last_column = yycolumn + yyleng - 1; \ */
+/*     yycolumn += yyleng; */
+#define YY_USER_ACTION LOC_USER_ACTION
 %}
 
 
@@ -102,7 +103,7 @@ null {
 
 {DBL_QUOTE} {
      BEGIN(COND_STRING);
-     L_TRY(aejson_parser_string_start(parser, loc));
+     L_TRY(aejson_parser_strlit_start(parser, loc));
 }
 
 
@@ -135,7 +136,7 @@ null {
           abort();
           break;
      }
-     L_TRY(aejson_parser_string_add_char(parser, loc, new_char));
+     L_TRY(aejson_parser_strlit_add(parser, loc, new_char));
 }
 
 <COND_STRING>[[:print:]] {
@@ -143,7 +144,7 @@ null {
      {
      case '"':
           BEGIN(INITIAL);
-          L_TRY(aejson_parser_string_end(parser, loc, &yylval->str));
+          L_TRY(aejson_parser_strlit_end(parser, loc, &yylval->str));
           return t_string;
           break;
      case '\n':
@@ -151,7 +152,7 @@ null {
           yyterminate();
           break;
      default:
-          L_TRY(aejson_parser_string_add_char(parser, loc, yytext[0]));
+          L_TRY(aejson_parser_strlit_add(parser, loc, yytext[0]));
           break;
      }
 }
@@ -169,7 +170,7 @@ null {
                      invalid);
           yyterminate();
      }
-     L_TRY(aejson_parser_string_add_char(parser, loc, uni));
+     L_TRY(aejson_parser_strlit_add(parser, loc, uni));
 }
 
 

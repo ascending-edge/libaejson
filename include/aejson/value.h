@@ -26,13 +26,14 @@ typedef enum aejson_value_type
 
 typedef struct aejson_value
 {
+     struct aejson_value *next;
      aejson_value_type_t type;
      union {
           char *str;
           double dbl;
           int64_t integer;
           void *object;
-          ae_ptrarray_t *array;
+          struct aejson_value *array;
           bool boolean;
      };
 } aejson_value_t;

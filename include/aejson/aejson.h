@@ -6,6 +6,8 @@
 #ifndef _AEJSON_H
 #define _AEJSON_H
 
+#include <aejson/loc.h>
+#include <aejson/strlit.h>
 #include <aejson/object.h>
 #include <aejson/pair.h>
 #include <aejson/parser.h>

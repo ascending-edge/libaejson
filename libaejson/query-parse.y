@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <ae/ae.h>
 
+#include <aejson/loc.h>     
 #include <aejson/parser.h>
+
 
 struct aejson_query;
      
 #define QERROR_VERBOSE
-#define QLTYPE aejson_parser_loc_t     
+#define QLTYPE aejson_loc_t     
 
 #define P_TRY(expr) if(!(expr)) { YYABORT; }
 }
@@ -43,11 +45,11 @@ struct aejson_query;
 %lex-param {struct aejson_query *parser}
 
 
-%token t_index
+%token t_integer
 %token t_string
 
 %type <str> t_string
-%type <integer> t_index
+%type <integer> t_integer
 
 %% 
 
@@ -67,9 +69,9 @@ node
 {
      printf("node string: %s\n", $1);
 }
-| t_string '[' t_index ']'
+| t_string '[' t_integer ']'
 {
-     printf("node with index: %s:%d\n", $1, $3);
+     printf("node with index: %s:%ld\n", $1, $3);
 }
 ;
 
@@ -82,11 +84,8 @@ void qerror(QLTYPE *loc, void *scanner, struct aejson_query *self,
 {
      char msg[2048];
      AE_STR_FROM_ARGS(msg, sizeof(msg), fmt);
-     /* aejson_query_error_set(self, loc, */
-     /*                         "%d:%d %s", */
-     /*                         loc->first_line, loc->first_column, msg); */
-
-     fprintf(stderr, "%d:%d %s", 
-             loc->first_line, loc->first_column, msg);
+     aejson_query_error_set(self, loc,
+                             "%d:%d %s",
+                             loc->first_line, loc->first_column, msg);
 }
 

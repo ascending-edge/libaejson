@@ -36,7 +36,9 @@ libaejson_la_SOURCES = \
 	value.c \
 	object.c \
 	pair.c \
-	query.c
+	query.c \
+	strlit.c 
+
 
 #headerdir = $(prefix)/include/aejson
 #header_DATA = ../include/aejson/aejson.h

@@ -1,31 +1,40 @@
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ * 
+ * Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved
+ */
 #include <ae/ae.h>
 #include <aejson/aejson.h>
 #include <syslog.h>
 
-static bool internal_main(ae_res_t *e)
+
+/** 
+ * This is the real main().
+ */
+static bool internal_main(ae_res_t *e, int argc, char **argv)
 {
 
      ae_pool_t pool;
      AE_MEM_CLEAR(&pool);
      AE_TRY(ae_pool_init(e, &pool, 1024*1024 * 5));
 
-     /* aejson_parser_t parser; */
-     /* AE_MEM_CLEAR(&parser); */
-     /* AE_TRY(aejson_parser_init(e, &parser)); */
+     aejson_parser_t parser;
+     AE_MEM_CLEAR(&parser);
+     AE_TRY(aejson_parser_init(e, &parser));
      
-     /* aejson_object_t *result = NULL; */
-     /* bool res = aejson_parser_parse(e, &parser, &pool, &result); */
+     aejson_object_t *result = NULL;
+     bool res = aejson_parser_parse_file(e, &parser, &pool, stdin, &result);
 
-     /* if(res) */
-     /* { */
-     /*      aejson_object_dump(result, 0, stdout); */
-     /* } */
+     if(res)
+     {
+          aejson_object_dump(result, 0, stdout);
+     }
 
-     aejson_query_t query;
-     AE_MEM_CLEAR(&query);
-     AE_TRY(aejson_query_init(e, &query));
+     /* aejson_query_t query; */
+     /* AE_MEM_CLEAR(&query); */
+     /* AE_TRY(aejson_query_init(e, &query)); */
 
-     bool res = aejson_query_parse(e, &query, &pool);
+     /* bool res = aejson_query_parse(e, &query, &pool, argv[1]); */
      
      if(!ae_pool_uninit(e, &pool))
      {
@@ -35,6 +44,11 @@ static bool internal_main(ae_res_t *e)
 }
 
 
+/**
+ * Entry point...
+ *
+ * This sets up logging and reports errors.
+ */
 int main(int argc, char *argv[])
 {
      ae_res_t e;
@@ -54,7 +68,7 @@ int main(int argc, char *argv[])
           goto error_exit;
      }
 
-	if(!internal_main(&e))
+	if(!internal_main(&e, argc, argv))
      {
           goto error_exit;
      }

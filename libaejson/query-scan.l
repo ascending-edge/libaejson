@@ -10,11 +10,12 @@
 %option outfile="query-scan.c"
 %{
 #include <ae/ae.h>
-#include <aejson/parser.h>
+#include <aejson/loc.h>
+#include <aejson/query.h>
 struct aejson_query;
 #include "query-parse.h"
 
-#define QLTYPE aejson_parser_loc_t     
+#define QLTYPE aejson_loc_t     
 
 void qerror(QLTYPE *loc, void *scanner, struct aejson_query *self,
             const char *fmt, ...);
@@ -33,7 +34,7 @@ void qerror(QLTYPE *loc, void *scanner, struct aejson_query *self,
 
 #define L_TRY(expr) if(!(expr)) yyterminate()
      
-#define QLTYPE aejson_parser_loc_t
+#define QLTYPE aejson_loc_t
 
 int jlex(QSTYPE *foo, QLTYPE *loc,
           void *scanner, struct aejson_query *parser);
@@ -51,11 +52,13 @@ void jerror(QLTYPE *loc, void *scanner, struct aejson_query *parser,
 
 %}
 
-
+DBL_QUOTE \"
 CTRL [\.\[\]]
-INTEGER [1-9][0-9]*
-INDEX {INTEGER}|\*
+INTEGER [0-9]+
+HEXCHAR [0123456789abcdef]
 
+
+%x COND_STRING
 %%
 
 {CTRL} {
@@ -63,29 +66,95 @@ INDEX {INTEGER}|\*
 	return yytext[0];
 }
 
-{INDEX} {
-     if(yytext[0] == '*')
+
+{INTEGER} {
+     if(sscanf(yytext, "%"SCNu64, &yylval->integer) != 1)
      {
-          yylval->integer = -1;
+          yyterminate();
      }
-     else
-     {
-          if(sscanf(yytext, "%d", &yylval->integer) != 1)
-          {
-               yyterminate();
-          }
-     }
-     return t_index;
+     return t_integer;
 }
 
-[[:alnum:]]+ {
-     yylval->str = strdup(yytext);
-     return t_string;
+{DBL_QUOTE} {
+     BEGIN(COND_STRING);
+     L_TRY(aejson_query_strlit_start(parser, loc));
 }
+
+
+<COND_STRING>\\[bfnrt\"\\/] {
+     char new_char = '\0';
+     switch(yytext[1])
+     {
+     case '"':
+     case '/':
+     case '\\':
+          new_char = yytext[1];
+          break;
+     case 'b':
+          new_char = '\b';
+          break;
+     case 'f':
+          new_char = '\f';          
+          break;
+     case 'n':
+          new_char = '\n';          
+          break;
+     case 'r':
+          new_char = '\r';          
+          break;
+     case 't':
+          new_char = '\t';          
+          break;
+     default:
+          fprintf(stderr, "%s:%d impossible condition", __FILE__, __LINE__);
+          abort();
+          break;
+     }
+     L_TRY(aejson_query_strlit_add(parser, loc, new_char));
+}
+
+<COND_STRING>[[:print:]] {
+     switch(yytext[0])
+     {
+     case '"':
+          BEGIN(INITIAL);
+          L_TRY(aejson_query_strlit_end(parser, loc, &yylval->str));
+          return t_string;
+          break;
+     case '\n':
+          jerror(loc, yyscanner, parser, "scan error detected");
+          yyterminate();
+          break;
+     default:
+          L_TRY(aejson_query_strlit_add(parser, loc, yytext[0]));
+          break;
+     }
+}
+
+
+<COND_STRING>\\u{HEXCHAR}{HEXCHAR}{HEXCHAR}{HEXCHAR} {
+     uint16_t uni = 0;
+     if(sscanf(&yytext[2], "%"SCNx16, &uni) != 1)
+     {
+          char invalid[5];
+          memcpy(invalid, &yytext[2], 4);
+          invalid[4] = '\0';
+          ae_res_err(parser->e,
+                     "conversion error, invalid hex number: %s",
+                     invalid);
+          yyterminate();
+     }
+     L_TRY(aejson_query_strlit_add(parser, loc, uni));
+}
+
+[ \t\n] {
+	/* whitespace */
+}
+
 
 . {
      /* process default here */
-     yyerror(loc, yyscanner, parser, "scan error detected");
+     qerror(loc, yyscanner, parser, "scan error detected");
      yyterminate();
 }
 

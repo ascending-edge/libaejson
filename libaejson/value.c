@@ -10,6 +10,7 @@
 
 #include <aejson/object.h>
 
+
 bool aejson_value_init(ae_res_t *e, aejson_value_t *self,
                        aejson_value_type_t t)
 {
@@ -18,14 +19,32 @@ bool aejson_value_init(ae_res_t *e, aejson_value_t *self,
 }
 
 
+/** 
+ * Iterates over a list of value objects and dumps them.
+ *
+ * @param depth used for output padding
+ * 
+ * @param out where to write to
+ */
+static void aejson_value_array_dump(aejson_value_t *array,
+                                    int depth, FILE *out)
+{
+     fprintf(out, "[");
+     for(aejson_value_t *i=array; i; i=i->next)
+     {
+          aejson_value_dump(i, depth, out);
+          if(i->next)
+          {
+               fprintf(out, ",");
+          }
+     }
+     fprintf(out, "]");     
+}
+
+
 void aejson_value_dump(const aejson_value_t *self,
                        int depth, FILE *out)
 {
-     char *pad = alloca(depth+1);
-     memset(pad, '\t', depth);
-     pad[depth] = '\0';
-     
-     fprintf(out, "%svalue = ", pad);
      switch(self->type)
      {
      case AEJSON_VALUE_TYPE_STRING:
@@ -41,6 +60,7 @@ void aejson_value_dump(const aejson_value_t *self,
           aejson_object_dump((aejson_object_t*)self->object, depth+1, out);
           break;
      case AEJSON_VALUE_TYPE_ARRAY:
+          aejson_value_array_dump(self->array, depth, out);
           break;
      case AEJSON_VALUE_TYPE_BOOLEAN:
           fprintf(out, "%s", self->boolean ? "true" : "false");
@@ -51,6 +71,4 @@ void aejson_value_dump(const aejson_value_t *self,
      default:
           break;
      }
-     
 }
-

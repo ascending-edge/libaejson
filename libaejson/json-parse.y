@@ -4,14 +4,15 @@
 #include <ae/ae.h>
 
 #include <malloc.h>     
-     
+
+#include <aejson/loc.h>     
 #include <aejson/parser.h>
 #include <aejson/value.h>
 #include <aejson/pair.h>
 #include <aejson/object.h>
      
 #define JERROR_VERBOSE
-#define JLTYPE aejson_parser_loc_t     
+#define JLTYPE aejson_loc_t     
 
 #define P_TRY(expr) if(!(expr)) { YYABORT; }
 }
@@ -63,14 +64,13 @@ struct aejson_parser;
 %token t_string
 %type <str> t_string
 
-%type <value> value
+%type <value> value array elements
 %type <boolean> boolean
 %type <pair> pair
 %type <object> object members
-%type <array> array elements
 
-%start object
-%% /* The grammar follows.  */
+
+%% 
 
 
 object
@@ -78,49 +78,44 @@ object
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      parser->result = $$;
-     printf("empty object: %p\n", $$);
 }
 | '{' members '}'
 {
      $$ = $2;
      parser->result = $$;
-     printf("populated object: %p\n", $$);
 }
 ;
+
 
 pair
 : t_string ':' value
 {
-     printf("pair: (%s)\n", $1);
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      $$->name = $1;
      $$->value = $3;
 }
 ;
 
+
 members
 : pair
 {
-     printf("members:\n");
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      P_TRY(aejson_object_init(parser->e, $$, parser->pool));
      P_TRY(aejson_object_pair_add(parser->e, $$, $1));
-     printf("members:\n");
-     
 }
 | members ',' pair
 {
-     printf("second pair\n");
      $$ = $1;
      P_TRY(aejson_object_pair_add(parser->e, $1, $3));
 }
 ;
 
+
 array
 : '[' ']'
 {
-     P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(ae_ptrarray_init(parser->e, $$, parser->pool, 16));
+     $$ = NULL;
 }
 | '[' elements ']'
 {
@@ -128,19 +123,16 @@ array
 }
 ;
 
+
 elements
 : value
-{
-     P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     P_TRY(ae_ptrarray_init(parser->e, $$, parser->pool, 16));
-     P_TRY(ae_ptrarray_append(parser->e, $$, $1));
-}
 | value ',' elements
 {
-     $$ = $3;
-     P_TRY(ae_ptrarray_append(parser->e, $$, $1));
+     $$ = $1;
+     $$->next = $3;
 }
 ;
+
 
 value
 : t_string
@@ -163,7 +155,6 @@ value
 }
 | object
 {
-     printf("object value\n");
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_OBJECT));
      $$->object = $1;
@@ -187,6 +178,7 @@ value
 }
 ;
 
+
 boolean
 : t_true
 {
@@ -199,7 +191,6 @@ boolean
 ;
 
 
-
 %%
 #include <stdio.h>
 void jerror(JLTYPE *loc, void *scanner, struct aejson_parser *self,
@@ -208,7 +199,6 @@ void jerror(JLTYPE *loc, void *scanner, struct aejson_parser *self,
      char msg[2048];
      AE_STR_FROM_ARGS(msg, sizeof(msg), fmt);
      aejson_parser_error_set(self, loc,
-                             "%d:%d %s",
+                             "%zd:%zd %s",
                              loc->first_line, loc->first_column, msg);
 }
-

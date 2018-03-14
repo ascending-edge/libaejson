@@ -30,6 +30,9 @@ extern "C" {
      void aejson_object_dump(const aejson_object_t *self,
                              int depth, FILE *out);
 
+     bool aejson_object_find(ae_res_t *e, aejson_object_t *self,
+                             const char *path);
+
 #ifdef __cplusplus
 }
 #endif

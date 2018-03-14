@@ -2,24 +2,31 @@
  * @author Greg Rowe <greg.rowe@ascending-edge.com>
  * 
  * Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved
- * 
  */
 #include <aejson/parser.h>
 
 #include "json-parse.h"
 
+/* I hate doing this but I haven't come up with a more elegant way.  I
+ * ought to look at how flex is implemented and make something less
+ * complicated. */
 int jlex_init(void**);
 int jlex_destroy(void*);
+struct yy_buffer_state;
+struct yy_buffer_state* j_scan_string(const char *, void *);
+void j_delete_buffer(struct yy_buffer_state*, void*);
+void jset_in(FILE * , void* );
 
 
 bool aejson_parser_init(ae_res_t *e, aejson_parser_t *self)
 {
+     AE_TRY(aejson_strlit_init(e, &self->strlit));
      return true;
 }
 
 
 void aejson_parser_error_set(aejson_parser_t *self,
-                             const aejson_parser_loc_t *loc,
+                             const aejson_loc_t *loc,
                              const char *fmt, ...)
 {
      char msg[2048];
@@ -28,16 +35,50 @@ void aejson_parser_error_set(aejson_parser_t *self,
 }
 
 
-bool aejson_parser_parse(ae_res_t *e, aejson_parser_t *self,
-                         ae_pool_t *pool, aejson_object_t **out)
+/** 
+ * Prepare the scanner for use independent of input type (string,
+ * file).  The sets self->pool, and self->e.
+ *
+ * @param pool memory pool to allocate from for scanning and parsing
+ * 
+ * @param scanner output - initialized scanner that must be destroyed
+ */
+static bool aejson_scan_init(ae_res_t *e, aejson_parser_t *self,
+                             ae_pool_t *pool, void *scanner)
 {
      self->pool = pool;
      self->e = e;
      self->result = NULL;
-     
-     void* scanner;
-     jlex_init(&scanner);
+     AE_TRY(aejson_strlit_cfg(e, &self->strlit, pool));
+     jlex_init(scanner);
+     return true;
+}
 
+
+bool aejson_parser_parse(ae_res_t *e, aejson_parser_t *self,
+                         ae_pool_t *pool,
+                         const char *json,
+                         aejson_object_t **out)
+{
+     void *scanner = NULL;
+     AE_TRY(aejson_scan_init(e, self, pool, &scanner));
+     struct yy_buffer_state *bs = j_scan_string(json, scanner);
+     jparse(scanner, self);
+     j_delete_buffer(bs, scanner);
+     jlex_destroy(scanner);     
+     *out = self->result;
+     return self->result != NULL;
+}
+
+
+bool aejson_parser_parse_file(ae_res_t *e, aejson_parser_t *self,
+                              ae_pool_t *pool,
+                              FILE *in,
+                              aejson_object_t **out)
+{
+     void *scanner = NULL;
+     AE_TRY(aejson_scan_init(e, self, pool, &scanner));
+     jset_in(in, scanner);
      jparse(scanner, self);
      jlex_destroy(scanner);     
      *out = self->result;
@@ -46,61 +87,37 @@ bool aejson_parser_parse(ae_res_t *e, aejson_parser_t *self,
 
 
 bool aejson_parser_comment_add(aejson_parser_t *self,
-                               const aejson_parser_loc_t  *loc,
+                               const aejson_loc_t  *loc,
                                const char *comment)
 {
+     /* Maybe at some point I'll decorate the parse tree with some
+      * comments. */
      /* printf("ignoring comment: %s\n", comment); */
      return true;
 }
 
 
-bool aejson_parser_string_start(aejson_parser_t *self,
-                                const aejson_parser_loc_t *loc)
+bool aejson_parser_strlit_start(aejson_parser_t *self,
+                                const aejson_loc_t *loc)
 {
-     if(self->string_literal)
-     {
-          ae_res_err(self->e, "must not start a literal while processing one!");
-          return false;
-     }
-     self->string_literal_max = 512;
-     AE_TRY(ae_pool_calloc(self->e, self->pool,
-                           &self->string_literal,
-                           self->string_literal_max));
+     AE_TRY(aejson_strlit_start(self->e, &self->strlit, loc));
      return true;
 }
 
 
-bool aejson_parser_string_end(aejson_parser_t *self,
-                              const aejson_parser_loc_t *loc,
-                              char **out)
+bool aejson_parser_strlit_add(aejson_parser_t *self,
+                              const aejson_loc_t *loc,
+                              char c)
 {
-     if(!self->string_literal)
-     {
-          ae_res_err(self->e, "not currently processing a string literal");
-     }
-     *out = self->string_literal;
-     self->string_literal = NULL;
-     self->string_literal_len = 0;
+     AE_TRY(aejson_strlit_add(self->e, &self->strlit, loc, c));
      return true;
 }
 
 
-bool aejson_parser_string_add_char(aejson_parser_t *self,
-                                   const aejson_parser_loc_t *loc, char c)
+bool aejson_parser_strlit_end(aejson_parser_t *self,
+                               const aejson_loc_t *loc,
+                               char **out)
 {
-     /* Do we need to resize? */
-     if(self->string_literal_len == self->string_literal_max - 1)
-     {
-          size_t new_max = self->string_literal_max + 512;
-          char *new_str = NULL;
-          AE_TRY(ae_pool_realloc(self->e, self->pool,
-                                 self->string_literal, self->string_literal_max,
-                                 &new_str, new_max));
-          
-          self->string_literal = new_str;
-          self->string_literal_max = new_max;
-     }
-     self->string_literal[self->string_literal_len++] = c;
+     AE_TRY(aejson_strlit_end(self->e, &self->strlit, loc, out));
      return true;
 }
-                              
