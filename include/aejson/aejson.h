@@ -13,6 +13,7 @@
 #include <aejson/parser.h>
 #include <aejson/query.h>
 #include <aejson/value.h>
+#include <aejson/node.h>
 
 #ifdef __cplusplus
 extern "C" {

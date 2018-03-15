@@ -35,10 +35,12 @@ void aejson_query_error_set(aejson_query_t *self,
 
 
 bool aejson_query_parse(ae_res_t *e, aejson_query_t *self,
-                        ae_pool_t *pool, const char *in)
+                        ae_pool_t *pool, const char *in,
+                        aejson_node_t **out)
 {
      self->pool = pool;
      self->e = e;
+     self->result = NULL;
 
      AE_TRY(aejson_strlit_cfg(e, &self->strlit, pool));
      
@@ -49,9 +51,8 @@ bool aejson_query_parse(ae_res_t *e, aejson_query_t *self,
      qparse(scanner, self);
      q_delete_buffer(bs, scanner);
      qlex_destroy(scanner);     
-     /* *out = self->result; */
-     /* return self->result != NULL; */
-     return true;
+     *out = self->result;
+     return self->result != NULL;
 }
 
 

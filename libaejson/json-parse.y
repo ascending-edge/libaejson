@@ -106,6 +106,7 @@ members
 }
 | members ',' pair
 {
+     /* Should I use a linked list instead? */
      $$ = $1;
      P_TRY(aejson_object_pair_add(parser->e, $1, $3));
 }
@@ -126,10 +127,16 @@ array
 
 elements
 : value
-| value ',' elements
+| elements ',' value
 {
+     aejson_value_t *x = $$;
+     /* well this sucks....there's got to be a better way */
+     while(x->next)
+     {
+          x = x->next;
+     }
+     x->next = $3;
      $$ = $1;
-     $$->next = $3;
 }
 ;
 

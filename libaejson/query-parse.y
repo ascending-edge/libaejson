@@ -1,10 +1,12 @@
+ /* -*-c-*- */
  /* Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved */
 %code top {
 #include <stdio.h>
 #include <ae/ae.h>
 
 #include <aejson/loc.h>     
-#include <aejson/parser.h>
+#include <aejson/query.h>
+#include <aejson/node.h>
 
 
 struct aejson_query;
@@ -17,6 +19,7 @@ struct aejson_query;
 %union {
      int64_t integer;
      char *str;
+     struct aejson_node *node;
 }
 
 %{
@@ -50,28 +53,43 @@ struct aejson_query;
 
 %type <str> t_string
 %type <integer> t_integer
+%type <node> node query
 
 %% 
 
 query
 : node
 {
-     printf("query with PLAIN node\n");
+     $$ = $1;
+     parser->result = $$;
 }
 | query '.' node
 {
-     printf("query with node\n");
+     aejson_node_t *x = $1;
+     /* well this sucks....there's got to be a better way */
+     while(x->next)
+     {
+          x = x->next;
+     }
+     x->next = $3;
+     $$ = $1;
+     parser->result = $$;
 }
 ;
 
 node
 : t_string
 {
-     printf("node string: %s\n", $1);
+     /* printf("sup"); */
+     P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
+     $$->name = $1;
+     $$->index = -1;
 }
 | t_string '[' t_integer ']'
 {
-     printf("node with index: %s:%ld\n", $1, $3);
+     P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
+     $$->name = $1;
+     $$->index = $3;
 }
 ;
 

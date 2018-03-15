@@ -25,7 +25,8 @@ bool aejson_strlit_start(ae_res_t *e, aejson_strlit_t *self,
 {
      if(self->str)
      {
-          ae_res_err(e, "must not start a literal while processing one!");
+          ae_res_err(e, "must not start a literal while processing one! (%s)",
+                     self->str);
           return false;
      }
      self->max = 512;

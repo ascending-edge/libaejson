@@ -13,7 +13,6 @@
  */
 static bool internal_main(ae_res_t *e, int argc, char **argv)
 {
-
      ae_pool_t pool;
      AE_MEM_CLEAR(&pool);
      AE_TRY(ae_pool_init(e, &pool, 1024*1024 * 5));
@@ -28,13 +27,13 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
      if(res)
      {
           aejson_object_dump(result, 0, stdout);
+          if(!aejson_object_find(e, result, &pool,
+                                 "\"array\"[0].\"a\""))
+          {
+               res = false;
+          }
      }
-
-     /* aejson_query_t query; */
-     /* AE_MEM_CLEAR(&query); */
-     /* AE_TRY(aejson_query_init(e, &query)); */
-
-     /* bool res = aejson_query_parse(e, &query, &pool, argv[1]); */
+     
      
      if(!ae_pool_uninit(e, &pool))
      {
