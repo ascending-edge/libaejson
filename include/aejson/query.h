@@ -17,6 +17,8 @@ typedef struct aejson_query
      aejson_strlit_t strlit;
 
      aejson_node_t *result;
+
+     aejson_node_t *node;
 } aejson_query_t;
 
 #ifdef __cplusplus
@@ -36,8 +38,6 @@ extern "C" {
                                  const aejson_loc_t *loc,
                                  const char *fmt, ...);
 
-     bool aejson_query_strlit_start(aejson_query_t *self,
-                                    const aejson_loc_t *loc);
      bool aejson_query_strlit_add(aejson_query_t *self,
                                   const aejson_loc_t *loc,
                                   char c);
@@ -45,6 +45,7 @@ extern "C" {
                                   const aejson_loc_t *loc,
                                   char **out);
 
+     bool aejson_query_new_node(aejson_query_t *self);
 
 #ifdef __cplusplus
 }

@@ -52,42 +52,35 @@ void jerror(QLTYPE *loc, void *scanner, struct aejson_query *parser,
 
 %}
 
-DBL_QUOTE \"
-CTRL [\.\[\]]
+DOT \.
 INTEGER [0-9]+
 HEXCHAR [0123456789abcdef]
 
-
-%x COND_STRING
 %%
 
-{CTRL} {
-	/* control characters like parens, brackets, commas, and dot */
-	return yytext[0];
-}
-
-
-{INTEGER} {
-     if(sscanf(yytext, "%"SCNu64, &yylval->integer) != 1)
+\[{INTEGER}\] {
+     if(sscanf(&yytext[1], "%"SCNu64, &parser->node->index) != 1)
      {
+          aejson_query_error_set(parser, loc,
+                                 "%s is not an integer", &yytext[1]);
           yyterminate();
      }
-     return t_integer;
 }
 
-{DBL_QUOTE} {
-     BEGIN(COND_STRING);
-     L_TRY(aejson_query_strlit_start(parser, loc));
+{DOT} {
+     L_TRY(aejson_query_strlit_end(parser, loc, &parser->node->name));
+     yylval->node = parser->node;
+     L_TRY(aejson_query_new_node(parser));
+     return t_node;
 }
 
-
-<COND_STRING>\\[bfnrt\"\\/] {
+\\[bfnrt\.\[\]] {
      char new_char = '\0';
      switch(yytext[1])
      {
-     case '"':
-     case '/':
-     case '\\':
+     case '[':
+     case ']':          
+     case '.':          
           new_char = yytext[1];
           break;
      case 'b':
@@ -113,26 +106,7 @@ HEXCHAR [0123456789abcdef]
      L_TRY(aejson_query_strlit_add(parser, loc, new_char));
 }
 
-<COND_STRING>[[:print:]] {
-     switch(yytext[0])
-     {
-     case '"':
-          BEGIN(INITIAL);
-          L_TRY(aejson_query_strlit_end(parser, loc, &yylval->str));
-          return t_string;
-          break;
-     case '\n':
-          jerror(loc, yyscanner, parser, "scan error detected");
-          yyterminate();
-          break;
-     default:
-          L_TRY(aejson_query_strlit_add(parser, loc, yytext[0]));
-          break;
-     }
-}
-
-
-<COND_STRING>\\u{HEXCHAR}{HEXCHAR}{HEXCHAR}{HEXCHAR} {
+\\u{HEXCHAR}{HEXCHAR}{HEXCHAR}{HEXCHAR} {
      uint16_t uni = 0;
      if(sscanf(&yytext[2], "%"SCNx16, &uni) != 1)
      {
@@ -147,16 +121,26 @@ HEXCHAR [0123456789abcdef]
      L_TRY(aejson_query_strlit_add(parser, loc, uni));
 }
 
-[ \t\n] {
-	/* whitespace */
+. {
+     switch(yytext[0])
+     {
+     default:
+          L_TRY(aejson_query_strlit_add(parser, loc, yytext[0]));          
+          break;
+     }
 }
 
 
-. {
-     /* process default here */
-     qerror(loc, yyscanner, parser, "scan error detected");
+
+<<EOF>> {
+     L_TRY(aejson_query_strlit_end(parser, loc, &parser->node->name));
+     if(parser->node->name[0] != '\0')
+     {
+          yylval->node = parser->node;
+          AE_TRY(aejson_query_new_node(parser));
+          return t_node;
+     }
      yyterminate();
 }
-
 
 %%

@@ -31,7 +31,8 @@ extern "C" {
                              int depth, FILE *out);
 
      bool aejson_object_find(ae_res_t *e, aejson_object_t *self,
-                             ae_pool_t *pool, const char *path);
+                             ae_pool_t *pool, const char *path,
+                             aejson_value_t **out);
 
 #ifdef __cplusplus
 }

@@ -41,6 +41,8 @@ bool aejson_query_parse(ae_res_t *e, aejson_query_t *self,
      self->pool = pool;
      self->e = e;
      self->result = NULL;
+     AE_TRY(aejson_query_new_node(self));
+     
 
      AE_TRY(aejson_strlit_cfg(e, &self->strlit, pool));
      
@@ -56,18 +58,16 @@ bool aejson_query_parse(ae_res_t *e, aejson_query_t *self,
 }
 
 
-bool aejson_query_strlit_start(aejson_query_t *self,
-                               const aejson_loc_t *loc)
-{
-     AE_TRY(aejson_strlit_start(self->e, &self->strlit, loc));
-     return true;
-}
 
 
 bool aejson_query_strlit_add(aejson_query_t *self,
                              const aejson_loc_t *loc,
                              char c)
 {
+     if(!self->strlit.str)
+     {
+          AE_TRY(aejson_strlit_start(self->e, &self->strlit, loc));
+     }
      AE_TRY(aejson_strlit_add(self->e, &self->strlit, loc, c));
      return true;
 }
@@ -77,6 +77,20 @@ bool aejson_query_strlit_end(aejson_query_t *self,
                              const aejson_loc_t *loc,
                              char **out)
 {
+     if(!self->strlit.str)
+     {
+          *out = "";
+          return true;
+     }
      AE_TRY(aejson_strlit_end(self->e, &self->strlit, loc, out));
+     return true;
+}
+
+bool aejson_query_new_node(aejson_query_t *self)
+{
+     AE_TRY(ae_pool_alloc(self->e, self->pool,
+                          &self->node, sizeof(*self->node)));
+     self->node->index = -1;
+     self->node->name = NULL;
      return true;
 }

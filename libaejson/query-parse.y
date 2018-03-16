@@ -17,8 +17,6 @@ struct aejson_query;
 #define P_TRY(expr) if(!(expr)) { YYABORT; }
 }
 %union {
-     int64_t integer;
-     char *str;
      struct aejson_node *node;
 }
 
@@ -48,22 +46,17 @@ struct aejson_query;
 %lex-param {struct aejson_query *parser}
 
 
-%token t_integer
-%token t_string
-
-%type <str> t_string
-%type <integer> t_integer
-%type <node> node query
+%token t_node
+%type <node> query t_node
 
 %% 
 
 query
-: node
+: t_node
 {
-     $$ = $1;
      parser->result = $$;
 }
-| query '.' node
+| query t_node
 {
      aejson_node_t *x = $1;
      /* well this sucks....there's got to be a better way */
@@ -71,29 +64,19 @@ query
      {
           x = x->next;
      }
-     x->next = $3;
+     x->next = $2;
      $$ = $1;
      parser->result = $$;
 }
 ;
 
-node
-: t_string
-{
-     /* printf("sup"); */
-     P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     $$->name = $1;
-     $$->index = -1;
-}
-| t_string '[' t_integer ']'
-{
-     P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     $$->name = $1;
-     $$->index = $3;
-}
-;
-
-
+ /* wrap */
+ /* : t_node */
+ /* { */
+ /*      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$))); */
+ /*      memcpy($$, &$1, sizeof(*$$)); */
+ /* } */
+ /* ; */
 
 %%
 #include <stdio.h>

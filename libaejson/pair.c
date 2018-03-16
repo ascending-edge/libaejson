@@ -11,7 +11,7 @@ void aejson_pair_dump(const aejson_pair_t *self,
                       int depth, FILE *out)
 {
      char *pad = alloca(depth+1);
-     memset(pad, '\t', depth);
+     memset(pad, ' ', depth);
      pad[depth] = '\0';
      
      fprintf(out, "%s\"%s\":", pad, self->name);

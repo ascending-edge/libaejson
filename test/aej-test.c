@@ -23,14 +23,21 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
      
      aejson_object_t *result = NULL;
      bool res = aejson_parser_parse_file(e, &parser, &pool, stdin, &result);
+     fclose(stdin);
 
      if(res)
      {
           aejson_object_dump(result, 0, stdout);
-          if(!aejson_object_find(e, result, &pool,
-                                 "\"array\"[0].\"a\""))
+          aejson_value_t *val = NULL;
+
+          AE_LW("query: (%s)", argv[1]);
+          if(!aejson_object_find(e, result, &pool, argv[1], &val))
           {
                res = false;
+          }
+          else
+          {
+               aejson_value_dump(val, 0, stdout);
           }
      }
      
