@@ -1,8 +1,17 @@
+/**
+ * @author Greg Rowe <greg.rowe@ascending-edge.com>
+ * 
+ * Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved
+ */
 #ifndef _AEJSON_LOC_H
 #define _AEJSON_LOC_H
 
 #include <ae/ae.h>
 
+/**
+ * This is used for keeping track of locations in the scanners and
+ * parsers.
+ */
 typedef struct aejson_loc
 {
      size_t first_line;

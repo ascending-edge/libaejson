@@ -10,6 +10,7 @@
 #include <alloca.h>
 #include <aejson/query.h>
 
+
 bool aejson_object_init(ae_res_t *e, aejson_object_t *self,
                         ae_pool_t *pool)
 {

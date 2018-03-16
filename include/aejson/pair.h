@@ -10,16 +10,28 @@
 
 #include <aejson/value.h>
 
+
+/**
+ * This class represents a pair contained in a json object.
+ */
 typedef struct aejson_pair
 {
-     const char *name;
-     aejson_value_t *value;
+     const char *name;          /**< field name */
+     aejson_value_t *value;     /**< contents of the field */
 } aejson_pair_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+     /** 
+      * A debugging tool that provides a textual representation of the
+      * value.
+      *
+      * @param depth used for padding; increases with recursion
+      * 
+      * @param out where to write to
+      */
      void aejson_pair_dump(const aejson_pair_t *self,
                            int depth, FILE *out);
 

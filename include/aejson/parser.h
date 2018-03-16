@@ -37,6 +37,7 @@ extern "C" {
       */
      bool aejson_parser_init(ae_res_t *e, aejson_parser_t *self);
 
+
      /** 
       * Parses the @p json text
       *
@@ -66,6 +67,7 @@ extern "C" {
                                    FILE *in,
                                    aejson_object_t **out);
 
+
      /** 
       * This is used by the scanner to add a comment to the parse
       * tree.  Currently this does nothing.  In the future I might
@@ -78,6 +80,7 @@ extern "C" {
      bool aejson_parser_comment_add(aejson_parser_t *self,
                                     const aejson_loc_t  *loc,
                                     const char *comment);
+
 
      /** 
       * Scanner and parser report errors here.
@@ -102,6 +105,7 @@ extern "C" {
       */
      bool aejson_parser_strlit_start(aejson_parser_t *self,
                                      const aejson_loc_t *loc);
+
 
      /** 
       * This is called to continue building a string literal one
