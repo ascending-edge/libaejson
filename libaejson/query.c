@@ -92,5 +92,7 @@ bool aejson_query_new_node(aejson_query_t *self)
                           &self->node, sizeof(*self->node)));
      self->node->index = -1;
      self->node->name = NULL;
+     self->node->next = NULL;
+     self->node->last = self->node;
      return true;
 }

@@ -59,24 +59,19 @@ query
 | query t_node
 {
      aejson_node_t *x = $1;
-     /* well this sucks....there's got to be a better way */
-     while(x->next)
-     {
-          x = x->next;
-     }
-     x->next = $2;
+     x->last->next = $2;
+     $1->last = $2;
+     /* /\* well this sucks....there's got to be a better way *\/ */
+     /* while(x->next) */
+     /* { */
+     /*      x = x->next; */
+     /* } */
+     /* x->next = $2; */
      $$ = $1;
      parser->result = $$;
 }
 ;
 
- /* wrap */
- /* : t_node */
- /* { */
- /*      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$))); */
- /*      memcpy($$, &$1, sizeof(*$$)); */
- /* } */
- /* ; */
 
 %%
 #include <stdio.h>

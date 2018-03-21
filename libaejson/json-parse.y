@@ -130,12 +130,14 @@ elements
 | elements ',' value
 {
      aejson_value_t *x = $$;
-     /* well this sucks....there's got to be a better way */
-     while(x->next)
-     {
-          x = x->next;
-     }
-     x->next = $3;
+     x->last->next = $3;
+     x->last = $3;
+     /* /\* well this sucks....there's got to be a better way *\/ */
+     /* while(x->next) */
+     /* { */
+     /*      x = x->next; */
+     /* } */
+     /* x->next = $3; */
      $$ = $1;
 }
 ;

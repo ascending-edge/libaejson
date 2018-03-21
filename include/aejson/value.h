@@ -32,6 +32,7 @@ typedef enum aejson_value_type
 typedef struct aejson_value
 {
      struct aejson_value *next; /**< linked list... */
+     struct aejson_value *last; /**< last node in linked list */
      aejson_value_type_t type;  /**< What is stored here */
      union {
           bool boolean;          

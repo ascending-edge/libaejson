@@ -12,6 +12,7 @@
 typedef struct aejson_node
 {
      struct aejson_node *next;  /**< linked list of nodes */
+     struct aejson_node *last;  /**< last node in the linked list */
      char *name;                /**< the name of the node */
      int64_t index;             /**< array index, -1 if not
                                  * specified */

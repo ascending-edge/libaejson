@@ -15,6 +15,7 @@ bool aejson_value_init(ae_res_t *e, aejson_value_t *self,
                        aejson_value_type_t t)
 {
      self->type = t;
+     self->last = self;
      return true;
 }
 
