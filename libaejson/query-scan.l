@@ -70,7 +70,7 @@ HEXCHAR [0123456789abcdef]
 {DOT} {
      L_TRY(aejson_query_strlit_end(parser, loc, &parser->node->name));
      yylval->node = parser->node;
-     L_TRY(aejson_query_new_node(parser));
+     L_TRY(aejson_query_node_new(parser));
      return t_node;
 }
 
@@ -137,7 +137,7 @@ HEXCHAR [0123456789abcdef]
      if(parser->node->name[0] != '\0')
      {
           yylval->node = parser->node;
-          AE_TRY(aejson_query_new_node(parser));
+          AE_TRY(aejson_query_node_new(parser));
           return t_node;
      }
      yyterminate();

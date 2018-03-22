@@ -129,15 +129,7 @@ elements
 : value
 | elements ',' value
 {
-     aejson_value_t *x = $$;
-     x->last->next = $3;
-     x->last = $3;
-     /* /\* well this sucks....there's got to be a better way *\/ */
-     /* while(x->next) */
-     /* { */
-     /*      x = x->next; */
-     /* } */
-     /* x->next = $3; */
+     P_TRY(aejson_parser_value_append(parser, $3));
      $$ = $1;
 }
 ;

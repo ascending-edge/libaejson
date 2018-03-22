@@ -58,16 +58,7 @@ query
 }
 | query t_node
 {
-     aejson_node_t *x = $1;
-     x->last->next = $2;
-     $1->last = $2;
-     /* /\* well this sucks....there's got to be a better way *\/ */
-     /* while(x->next) */
-     /* { */
-     /*      x = x->next; */
-     /* } */
-     /* x->next = $2; */
-     $$ = $1;
+     P_TRY(aejson_query_node_append(parser, $2));
      parser->result = $$;
 }
 ;

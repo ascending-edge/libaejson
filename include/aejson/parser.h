@@ -25,6 +25,8 @@ typedef struct aejson_parser
 
      aejson_strlit_t strlit;    /**< used by the scanner to build
                                  * extract string literals */
+
+     aejson_value_t *last_value;
 } aejson_parser_t;
 
 
@@ -131,7 +133,15 @@ extern "C" {
      bool aejson_parser_strlit_end(aejson_parser_t *self,
                                    const aejson_loc_t *loc,
                                    char **out);
-     
+
+
+     /** 
+      * Appends a value to the current list.
+      *
+      * @param value what to append
+      */
+     bool aejson_parser_value_append(aejson_parser_t *self,
+                                     aejson_value_t *value);
 #ifdef __cplusplus
 }
 #endif

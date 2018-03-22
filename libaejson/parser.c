@@ -121,3 +121,16 @@ bool aejson_parser_strlit_end(aejson_parser_t *self,
      AE_TRY(aejson_strlit_end(self->e, &self->strlit, loc, out));
      return true;
 }
+
+
+bool aejson_parser_value_append(aejson_parser_t *self,
+                                aejson_value_t *value)
+{
+     if(!self->last_value)
+     {
+          self->last_value = value;
+     }
+     self->last_value->next = value;
+     self->last_value = value;
+     return true;
+}

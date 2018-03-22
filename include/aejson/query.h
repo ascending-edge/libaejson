@@ -24,6 +24,7 @@ typedef struct aejson_query
      aejson_node_t *result;     /**< The parse result is stored here */
 
      aejson_node_t *node;       /**< Used by the scanner */
+     aejson_node_t *last_node;
 } aejson_query_t;
 
 #ifdef __cplusplus
@@ -90,8 +91,16 @@ extern "C" {
      /** 
       * Creates a new node.  This is used by the scanner.
       */
-     bool aejson_query_new_node(aejson_query_t *self);
+     bool aejson_query_node_new(aejson_query_t *self);
 
+
+     /** 
+      * Appends a node to the current list.
+      *
+      * @param node what to append
+      */
+     bool aejson_query_node_append(aejson_query_t *self,
+                                   aejson_node_t *node);
 #ifdef __cplusplus
 }
 #endif
