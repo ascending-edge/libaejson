@@ -21,7 +21,9 @@ parser.c: json-scan.c
 libaejson_la_LDFLAGS = \
 	-no-undefined \
 	-version $(libaejson_MAJOR):$(libaejson_MINOR):$(libaejson_AGE) \
-	-lae0
+	-lae0 \
+	-lrt \
+	-lpthread
 
 libaejson_la_CPPFLAGS = \
 	-g -Wall -std=gnu99 \

@@ -66,8 +66,50 @@ extern "C" {
       * long as the pool used when parsing the object is still valid.
       */
      bool aejson_object_find(ae_res_t *e, aejson_object_t *self,
-                             ae_pool_t *pool, const char *path,
-                             aejson_value_t **out);
+                             ae_pool_t *pool, aejson_value_t **out,
+                             const char *fmt, ...)
+#ifdef __GNUC__
+          __attribute__((format (printf, 5, 6)))
+#endif          
+          ;
+
+     bool aejson_object_find_int64(ae_res_t *e, aejson_object_t *self,
+                                   ae_pool_t *pool, int64_t *out,
+                                   const char *fmt, ...)
+#ifdef __GNUC__
+          __attribute__((format (printf, 5, 6)))
+#endif          
+          ;
+
+     bool aejson_object_find_double(ae_res_t *e, aejson_object_t *self,
+                                   ae_pool_t *pool, double *out,
+                                   const char *fmt, ...)
+#ifdef __GNUC__
+          __attribute__((format (printf, 5, 6)))
+#endif          
+          ;
+
+
+     bool aejson_object_find_array_int64(ae_res_t *e, aejson_object_t *self,
+                                         ae_pool_t *pool,
+                                         size_t *out_len,
+                                         int64_t **out,
+                                         const char *fmt, ...)
+#ifdef __GNUC__
+          __attribute__((format (printf, 6, 7)))
+#endif          
+          ;
+
+     bool aejson_object_find_array_double(ae_res_t *e, aejson_object_t *self,
+                                          ae_pool_t *pool,
+                                          size_t *out_len,
+                                          double **out,
+                                          const char *fmt, ...)
+#ifdef __GNUC__
+          __attribute__((format (printf, 6, 7)))
+#endif          
+          ;
+
 
 #ifdef __cplusplus
 }

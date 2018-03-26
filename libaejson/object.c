@@ -6,9 +6,16 @@
 #include <aejson/object.h>
 
 #include <inttypes.h>
-
+#include <stdarg.h>
 #include <alloca.h>
 #include <aejson/query.h>
+
+#define MAKE_PATH                               \
+     char path[8192];                           \
+     va_list args;                              \
+     va_start(args, fmt);                       \
+     AE_STR_PRINTV(path, fmt, args);            \
+     va_end(args)
 
 
 bool aejson_object_init(ae_res_t *e, aejson_object_t *self,
@@ -116,9 +123,9 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
 }
 
 
-bool aejson_object_find(ae_res_t *e, aejson_object_t *self,
-                        ae_pool_t *pool, const char *path,
-                        aejson_value_t **out)
+static bool aejson_object_finds(ae_res_t *e, aejson_object_t *self,
+                                ae_pool_t *pool, aejson_value_t **out,
+                                const char *path)
 {
      aejson_query_t query_parser;
      AE_MEM_CLEAR(&query_parser);
@@ -134,5 +141,135 @@ bool aejson_object_find(ae_res_t *e, aejson_object_t *self,
      }
 
      AE_TRY(aejson_object_find_internal(e, self, query, out));
+     return true;
+}
+
+
+bool aejson_object_find(ae_res_t *e, aejson_object_t *self,
+                        ae_pool_t *pool, aejson_value_t **out,
+                        const char *fmt, ...)
+{
+     MAKE_PATH;
+     AE_LD("query: (%s)", path);
+     AE_TRY(aejson_object_finds(e, self, pool, out, path));
+     return true;
+}
+
+
+static bool aejson_object_find_type(ae_res_t *e, aejson_object_t *self,
+                                    ae_pool_t *pool, aejson_value_t **val,
+                                    aejson_value_type_t expected_type,
+                                    const char *path)
+{
+     AE_TRY(aejson_object_finds(e, self, pool, val, path));
+     if((*val)->type != expected_type)
+     {
+          ae_res_err(e, "%s: type mismatch, expecting %s but found %s",
+                     path,
+                     aejson_value_type_to_string(expected_type),
+                     aejson_value_type_to_string((*val)->type));
+          return false;
+     }
+     return true;
+}
+
+
+bool aejson_object_find_int64(ae_res_t *e, aejson_object_t *self,
+                              ae_pool_t *pool, int64_t *out,
+                              const char *fmt, ...)
+{
+     MAKE_PATH;
+     AE_LD("query: (%s)", path);
+     aejson_value_t *val = NULL;
+     AE_TRY(aejson_object_find_type(e, self, pool, &val,
+                                    AEJSON_VALUE_TYPE_INTEGER, path));
+     *out = val->integer;
+     return true;
+}
+
+
+bool aejson_object_find_double(ae_res_t *e, aejson_object_t *self,
+                              ae_pool_t *pool, double *out,
+                              const char *fmt, ...)
+{
+     MAKE_PATH;
+     AE_LD("query: (%s)", path);
+     aejson_value_t *val = NULL;
+     AE_TRY(aejson_object_find_type(e, self, pool, &val,
+                                    AEJSON_VALUE_TYPE_DOUBLE, path));
+     *out = val->dbl;
+     return true;
+}
+
+
+
+bool aejson_object_find_array_int64(ae_res_t *e, aejson_object_t *self,
+                                    ae_pool_t *pool,
+                                    size_t *out_len,
+                                    int64_t **out,
+                                    const char *fmt, ...)
+{
+     MAKE_PATH;
+     AE_LD("query: (%s)", path);
+     aejson_value_t *val = NULL;
+     AE_TRY(aejson_object_find_type(e, self, pool, &val,
+                                    AEJSON_VALUE_TYPE_ARRAY, path));
+     AE_LD("%zu", val->array->dimension);
+     size_t len_bytes = val->array->dimension * sizeof(**out);
+     *out_len = val->array->dimension;
+     AE_TRY(ae_pool_alloc(e, pool, out, len_bytes));
+
+     aejson_value_t *iter = val->array;
+     int64_t *out_iter = *out;
+     for(size_t i=0; i<val->array->dimension; ++i)
+     {
+          if(iter->type != AEJSON_VALUE_TYPE_INTEGER)
+          {
+               ae_res_err(e, "type mismatch, "
+                          "expecting integer but saw %s at index %zu",
+                          aejson_value_type_to_string(iter->type), i);
+               return false;
+          }
+          *out_iter = iter->integer;
+          ++out_iter;
+          iter = iter->next;
+     }
+
+     return true;
+}
+
+
+bool aejson_object_find_array_double(ae_res_t *e, aejson_object_t *self,
+                                     ae_pool_t *pool,
+                                     size_t *out_len,
+                                     double **out,
+                                     const char *fmt, ...)
+{
+     MAKE_PATH;
+     AE_LD("query: (%s)", path);
+     aejson_value_t *val = NULL;
+     AE_TRY(aejson_object_find_type(e, self, pool, &val,
+                                    AEJSON_VALUE_TYPE_ARRAY, path));
+     AE_LD("%zu", val->array->dimension);
+     size_t len_bytes = val->array->dimension * sizeof(**out);
+     *out_len = val->array->dimension;
+     AE_TRY(ae_pool_alloc(e, pool, out, len_bytes));
+
+     aejson_value_t *iter = val->array;
+     double *out_iter = *out;
+     for(size_t i=0; i<val->array->dimension; ++i)
+     {
+          if(iter->type != AEJSON_VALUE_TYPE_DOUBLE)
+          {
+               ae_res_err(e, "type mismatch, "
+                          "expecting double but saw %s at index %zu",
+                          aejson_value_type_to_string(iter->type), i);
+               return false;
+          }
+          *out_iter = iter->dbl;
+          ++out_iter;
+          iter = iter->next;
+     }
+
      return true;
 }

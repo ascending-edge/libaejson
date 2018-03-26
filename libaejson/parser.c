@@ -123,6 +123,14 @@ bool aejson_parser_strlit_end(aejson_parser_t *self,
 }
 
 
+bool aejson_parser_value_reset(aejson_parser_t *self)
+{
+     self->last_value = NULL;
+     self->dimension = 0;
+     return true;
+}
+
+
 bool aejson_parser_value_append(aejson_parser_t *self,
                                 aejson_value_t *value)
 {
@@ -132,5 +140,6 @@ bool aejson_parser_value_append(aejson_parser_t *self,
      }
      self->last_value->next = value;
      self->last_value = value;
+     ++self->dimension;
      return true;
 }

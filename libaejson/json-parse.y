@@ -53,19 +53,18 @@ struct aejson_parser;
 %parse-param {void *scanner}
 %parse-param {struct aejson_parser *parser}
 
-%token t_true
-%token t_false
+%token t_bool
 %token t_null
 %token t_float
-%type <dbl> t_float
+%type <dbl> t_float expression term factor
 %token t_integer
-%type <integer> t_integer
+%type <integer> t_integer int_expression int_term int_factor
 
 %token t_string
 %type <str> t_string
 
 %type <value> value array elements
-%type <boolean> boolean
+%type <boolean> t_bool 
 %type <pair> pair
 %type <object> object members
 
@@ -117,16 +116,23 @@ array
 : '[' ']'
 {
      $$ = NULL;
+     $$->dimension = 0;
+     aejson_parser_value_reset(parser);
 }
 | '[' elements ']'
 {
      $$ = $2;
+     $$->dimension = parser->dimension;
+     aejson_parser_value_reset(parser);
 }
 ;
 
 
 elements
 : value
+{
+     P_TRY(aejson_parser_value_append(parser, $1));
+}
 | elements ',' value
 {
      P_TRY(aejson_parser_value_append(parser, $3));
@@ -142,13 +148,13 @@ value
      P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_STRING));
      $$->str = $1;
 }
-| t_float
+| expression
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_DOUBLE));
      $$->dbl = $1;
 }
-| t_integer
+| int_expression
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_INTEGER));
@@ -166,7 +172,7 @@ value
      P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_ARRAY));
      $$->array = $1;
 }
-| boolean
+| t_bool
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      P_TRY(aejson_value_init(parser->e, $$, AEJSON_VALUE_TYPE_BOOLEAN));
@@ -179,15 +185,78 @@ value
 }
 ;
 
-
-boolean
-: t_true
+int_expression
+: int_expression '+' int_term
 {
-     $$ = true;
+     $$ = $1 + $3;
 }
-| t_false
+| int_expression '-' int_term
 {
-     $$ = false;
+     $$ = $1 - $3;
+}
+| int_term
+;
+
+int_term
+: int_term '*' int_factor
+{
+     $$ = $1 * $3;
+}
+| int_term '/' int_factor
+{
+     $$ = $1 / $3;
+}
+| int_factor
+;
+
+int_factor
+: '(' int_expression  ')'
+{
+     $$ = $2;
+}
+| '-' int_factor
+{
+     $$ = -$2;
+}
+| t_integer
+;
+
+expression
+: expression '+' term
+{
+     $$ = $1 + $3;
+}
+| expression '-' term
+{
+     $$ = $1 - $3;
+}
+| term
+;
+
+term
+: term '*' factor
+{
+     $$ = $1 * $3;
+}
+| term '/' factor
+{
+     $$ = $1 / $3;
+}
+| factor
+;
+
+factor
+: '(' expression  ')'
+{
+     $$ = $2;
+}
+| '-' factor
+{
+     $$ = -$2;
+}
+| t_float
+{
+     $$ = $1;
 }
 ;
 

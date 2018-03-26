@@ -33,6 +33,7 @@ typedef struct aejson_value
 {
      struct aejson_value *next; /**< linked list... */
      aejson_value_type_t type;  /**< What is stored here */
+     size_t dimension;
      union {
           bool boolean;          
           char *str;
@@ -65,6 +66,8 @@ extern "C" {
       */
      void aejson_value_dump(const aejson_value_t *self,
                             int depth, FILE *out);
+
+     const char* aejson_value_type_to_string(aejson_value_type_t t);
 #ifdef __cplusplus
 }
 #endif

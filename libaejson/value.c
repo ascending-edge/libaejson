@@ -72,3 +72,24 @@ void aejson_value_dump(const aejson_value_t *self,
           break;
      }
 }
+
+
+const char* aejson_value_type_to_string(aejson_value_type_t t)
+{
+     const char *MAP[] = {
+          "string",
+          "double",
+          "integer",
+          "object",
+          "array",
+          "boolean",
+          "null",
+     };
+
+     return ae_misc_enum_to_string(AEJSON_VALUE_TYPE_ENDMARKER,
+                                   t,
+                                   MAP,
+                                   AE_ARRAY_LEN(MAP),
+                                   __FILE__,
+                                   __LINE__);
+}

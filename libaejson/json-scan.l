@@ -56,12 +56,12 @@ E [eE]+[\+\-]?{DIGIT}+
 
 DBL_QUOTE \"
 
-CTRL [\{\}\[\],\:]
+CTRL [\(\)\{\}\[\],\:\+\-\/\*]
 
 COMMENT_SINGLE_LINE \/\/.*\n
 COMMENT_MULTI_LINE \/\*.*\*\/
 
-%x COND_STRING
+%x COND_STRING COND_HEREDOC
 %%
 
 {CTRL} {
@@ -88,13 +88,36 @@ COMMENT_MULTI_LINE \/\*.*\*\/
      return t_float;
 }
 
+\<\<\< {
+     BEGIN(COND_HEREDOC);
+     printf("FUCKER START %d:%d %x (%s)\n", loc->first_line, loc->first_column,
+            yytext[0], yytext);
+     L_TRY(aejson_parser_strlit_start(parser, loc));
+}
+
+<COND_HEREDOC>. {
+     printf("FUCKER %d:%d %x (%s)\n", loc->first_line, loc->first_column,
+            yytext[0], yytext);
+     L_TRY(aejson_parser_strlit_add(parser, loc, yytext[0]));
+}
+
+<COND_HEREDOC>\>\>\> {
+     printf("FUCKER END %d:%d %x (%s)\n", loc->first_line, loc->first_column,
+            yytext[0], yytext);
+     
+     BEGIN(INITIAL);
+     L_TRY(aejson_parser_strlit_end(parser, loc, &yylval->str));
+     return t_string;
+}
 
 true {
-     return t_true;
+     yylval->boolean = true;
+     return t_bool;
 }
 
 false {
-     return t_false;
+     yylval->boolean = false;
+     return t_bool;
 }
 
 null {
