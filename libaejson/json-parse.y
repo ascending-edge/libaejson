@@ -117,13 +117,13 @@ array
 {
      $$ = NULL;
      $$->dimension = 0;
-     aejson_parser_value_reset(parser);
+     aejson_parser_value_pop(parser);
 }
 | '[' elements ']'
 {
      $$ = $2;
-     $$->dimension = parser->dimension;
-     aejson_parser_value_reset(parser);
+     $$->dimension = parser->value_stack->dimension;
+     aejson_parser_value_pop(parser);
 }
 ;
 
@@ -131,7 +131,7 @@ array
 elements
 : value
 {
-     P_TRY(aejson_parser_value_append(parser, $1));
+     P_TRY(aejson_parser_value_push(parser, $1));
 }
 | elements ',' value
 {

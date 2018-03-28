@@ -18,6 +18,7 @@ void j_delete_buffer(struct yy_buffer_state*, void*);
 void jset_in(FILE * , void* );
 
 
+
 bool aejson_parser_init(ae_res_t *e, aejson_parser_t *self)
 {
      AE_TRY(aejson_strlit_init(e, &self->strlit));
@@ -125,8 +126,7 @@ bool aejson_parser_strlit_end(aejson_parser_t *self,
 
 bool aejson_parser_value_reset(aejson_parser_t *self)
 {
-     self->last_value = NULL;
-     self->dimension = 0;
+     self->value_stack = NULL;
      return true;
 }
 
@@ -134,12 +134,45 @@ bool aejson_parser_value_reset(aejson_parser_t *self)
 bool aejson_parser_value_append(aejson_parser_t *self,
                                 aejson_value_t *value)
 {
-     if(!self->last_value)
+     if(!self->value_stack)
      {
-          self->last_value = value;
+          ae_res_err(self->e, "empty stack");
+          return false;
      }
-     self->last_value->next = value;
-     self->last_value = value;
-     ++self->dimension;
+     if(!self->value_stack->value)
+     {
+          self->value_stack->value = value;
+     }
+     else
+     {
+          self->value_stack->value->next = value;
+     }
+     ++self->value_stack->dimension;
+     return true;
+}
+
+
+bool aejson_parser_value_push(aejson_parser_t *self,
+                              aejson_value_t *value)
+{
+     stack_node_t *new_node;
+          
+     AE_TRY(ae_pool_calloc(self->e, self->pool, &new_node, sizeof(*new_node)));
+     new_node->value = value;
+     new_node->next = self->value_stack;
+     self->value_stack = new_node;
+     ++self->value_stack->dimension;
+     return true;
+}
+
+
+bool aejson_parser_value_pop(aejson_parser_t *self)
+{
+     if(!self->value_stack)
+     {
+          ae_res_err(self->e, "empty stack");
+          return false;
+     }
+     self->value_stack = self->value_stack->next;
      return true;
 }

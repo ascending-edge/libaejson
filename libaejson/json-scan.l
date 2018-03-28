@@ -90,21 +90,14 @@ COMMENT_MULTI_LINE \/\*.*\*\/
 
 \<\<\< {
      BEGIN(COND_HEREDOC);
-     printf("FUCKER START %d:%d %x (%s)\n", loc->first_line, loc->first_column,
-            yytext[0], yytext);
      L_TRY(aejson_parser_strlit_start(parser, loc));
 }
 
 <COND_HEREDOC>. {
-     printf("FUCKER %d:%d %x (%s)\n", loc->first_line, loc->first_column,
-            yytext[0], yytext);
      L_TRY(aejson_parser_strlit_add(parser, loc, yytext[0]));
 }
 
 <COND_HEREDOC>\>\>\> {
-     printf("FUCKER END %d:%d %x (%s)\n", loc->first_line, loc->first_column,
-            yytext[0], yytext);
-     
      BEGIN(INITIAL);
      L_TRY(aejson_parser_strlit_end(parser, loc, &yylval->str));
      return t_string;

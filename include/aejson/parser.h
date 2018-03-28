@@ -12,6 +12,14 @@
 #include <aejson/object.h>
 #include <aejson/strlit.h>
 
+typedef struct stack_node
+{
+     struct stack_node *next;
+     size_t dimension;
+     aejson_value_t *value;
+} stack_node_t;
+
+
 
 /**
  * This class is used to parse json input
@@ -26,8 +34,7 @@ typedef struct aejson_parser
      aejson_strlit_t strlit;    /**< used by the scanner to build
                                  * extract string literals */
 
-     size_t dimension;
-     aejson_value_t *last_value;
+     stack_node_t *value_stack;
 } aejson_parser_t;
 
 
@@ -136,15 +143,12 @@ extern "C" {
                                    char **out);
 
 
-     /** 
-      * Appends a value to the current list.
-      *
-      * @param value what to append
-      */
      bool aejson_parser_value_append(aejson_parser_t *self,
                                      aejson_value_t *value);
 
-     bool aejson_parser_value_reset(aejson_parser_t *self);
+     bool aejson_parser_value_push(aejson_parser_t *self,
+                                   aejson_value_t *value);
+     bool aejson_parser_value_pop(aejson_parser_t *self);
 
 #ifdef __cplusplus
 }

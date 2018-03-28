@@ -29,13 +29,12 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
      if(res)
      {
           aejson_object_dump(result, 0, stdout);
-          abort();
           /* aejson_value_t *val = NULL; */
           double *myint = NULL;
           size_t myint_len = 0;
           if(!aejson_object_find_array_double(e, result, &pool,
-                                             &myint_len, &myint,
-                                             "a.b.c.d"))
+                                              &myint_len, &myint,
+                                              "a[1]"))
           {
                res = false;
           }

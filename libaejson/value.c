@@ -29,6 +29,7 @@ bool aejson_value_init(ae_res_t *e, aejson_value_t *self,
 static void aejson_value_array_dump(aejson_value_t *array,
                                     int depth, FILE *out)
 {
+     /* fprintf(out, "%zu-[", array->dimension); */
      fprintf(out, "[");
      for(aejson_value_t *i=array; i; i=i->next)
      {
