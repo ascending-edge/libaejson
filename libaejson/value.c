@@ -49,7 +49,7 @@ void aejson_value_dump(const aejson_value_t *self,
      switch(self->type)
      {
      case AEJSON_VALUE_TYPE_STRING:
-          fprintf(out, "%s", self->str);
+          fprintf(out, "\"%s\"", self->str);
           break;
      case AEJSON_VALUE_TYPE_DOUBLE:
           fprintf(out, "%g", self->dbl);

@@ -2,7 +2,6 @@
  /* Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved */
 %option noyywrap
 %option noinput
-%option nounput
 %option reentrant
 %option bison-bridge
 %option yylineno
@@ -56,24 +55,26 @@ DOT \.
 INTEGER [0-9]+
 HEXCHAR [0123456789abcdef]
 
+%x INDEX BREAK
 %%
 
-\[{INTEGER}\] {
-     if(sscanf(&yytext[1], "%"SCNu64, &parser->node->index) != 1)
+<INDEX>{INTEGER}\] {
+     if(sscanf(yytext, "%"SCNu64, &yylval->index) != 1)
      {
-          aejson_query_error_set(parser, loc,
-                                 "%s is not an integer", &yytext[1]);
+          aejson_query_error_set(parser, loc, "%s is not an integer", yytext);
           yyterminate();
      }
+     BEGIN(INITIAL);
+     return t_index;
 }
 
-{DOT} {
-     L_TRY(aejson_query_strlit_end(parser, loc, &parser->node->name));
-     yylval->node = parser->node;
-     L_TRY(aejson_query_node_new(parser));
-     return t_node;
+
+<BREAK>{DOT} {
+     BEGIN(INITIAL);
+     return '.';
 }
 
+ /* simple escape codes */
 \\[bfnrt\.\[\]] {
      char new_char = '\0';
      switch(yytext[1])
@@ -106,6 +107,7 @@ HEXCHAR [0123456789abcdef]
      L_TRY(aejson_query_strlit_add(parser, loc, new_char));
 }
 
+ /* unicode escape */
 \\u{HEXCHAR}{HEXCHAR}{HEXCHAR}{HEXCHAR} {
      uint16_t uni = 0;
      if(sscanf(&yytext[2], "%"SCNx16, &uni) != 1)
@@ -124,6 +126,23 @@ HEXCHAR [0123456789abcdef]
 . {
      switch(yytext[0])
      {
+     case '[':
+          BEGIN(INDEX);
+          if(parser->strlit.len)
+          {
+               L_TRY(aejson_query_strlit_end(parser, loc, &yylval->str));
+               return t_id;
+          }
+          break;
+     case '.':
+          unput('.');
+          BEGIN(BREAK);
+          if(parser->strlit.len)
+          {
+               L_TRY(aejson_query_strlit_end(parser, loc, &yylval->str));
+               return t_id;
+          }
+          break;          
      default:
           L_TRY(aejson_query_strlit_add(parser, loc, yytext[0]));          
           break;
@@ -131,14 +150,11 @@ HEXCHAR [0123456789abcdef]
 }
 
 
-
 <<EOF>> {
-     L_TRY(aejson_query_strlit_end(parser, loc, &parser->node->name));
-     if(parser->node->name[0] != '\0')
+     if(parser->strlit.len)
      {
-          yylval->node = parser->node;
-          AE_TRY(aejson_query_node_new(parser));
-          return t_node;
+          L_TRY(aejson_query_strlit_end(parser, loc, &yylval->str));          
+          return t_id;
      }
      yyterminate();
 }

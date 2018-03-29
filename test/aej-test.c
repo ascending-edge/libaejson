@@ -29,27 +29,18 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
      if(res)
      {
           aejson_object_dump(result, 0, stdout);
-          /* aejson_value_t *val = NULL; */
-          double *myint = NULL;
-          size_t myint_len = 0;
-          if(!aejson_object_find_array_double(e, result, &pool,
-                                              &myint_len, &myint,
-                                              "a[1]"))
+          aejson_value_t *val = NULL;
+          if(!aejson_object_find(e, result, &pool, &val, "a"))
           {
                res = false;
           }
           else
           {
-               AE_LD("found array: %zu", myint_len);
-               for(size_t i=0; i<myint_len; ++i)
-               {
-                    /* AE_LD("fuck[%zu]=%"PRId64, i, myint[i]); */
-                    AE_LD("fuck[%zu]=%g", i, myint[i]);
-               }
-               /* aejson_value_dump(val, 0, stdout); */
+               printf("--found--\n");
+               aejson_value_dump(val, 0, stdout);
+               printf("\n---------\n");
           }
      }
-     
      
      if(!ae_pool_uninit(e, &pool))
      {

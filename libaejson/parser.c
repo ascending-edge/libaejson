@@ -139,14 +139,11 @@ bool aejson_parser_value_append(aejson_parser_t *self,
           ae_res_err(self->e, "empty stack");
           return false;
      }
-     if(!self->value_stack->value)
-     {
-          self->value_stack->value = value;
-     }
-     else
+     if(self->value_stack->value)
      {
           self->value_stack->value->next = value;
      }
+     self->value_stack->value = value;     
      ++self->value_stack->dimension;
      return true;
 }

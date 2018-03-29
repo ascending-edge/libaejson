@@ -58,7 +58,8 @@ static bool aejson_object_value_from_array(ae_res_t *e,
 {
      if(array->type != AEJSON_VALUE_TYPE_ARRAY)
      {
-          ae_res_err(e, "error: expecting array");
+          ae_res_err(e, "error: expecting array but saw %s",
+                     aejson_value_type_to_string(array->type));
           return false;
      }
      /* can we find the index? */
@@ -76,6 +77,8 @@ static bool aejson_object_value_from_array(ae_res_t *e,
      return true;
 }
 
+
+
 static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
                                         aejson_node_t *query,
                                         aejson_value_t **out)
@@ -84,40 +87,46 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
      {
           aejson_pair_t *p = ae_ptrarray_at(&self->members, i);
 
-          bool res = strcmp(query->name, p->name) == 0;
+          bool res = strcmp(query->id, p->name) == 0;
           /* no match, so try the next pair in the object */
           if(!res)
           {
                continue;
           }
-
-          /* The name has been matched.  Now, if there is an array
-           * index, look for it. */
-          aejson_value_t *value = p->value;          
-          if(query->index != -1)
-          {
-               AE_TRY(aejson_object_value_from_array(e, p->value,
-                                                     query->index, &value));
-          }
-
-          /* We matched the name and the query has been exhausted.
-           * This means that we found what we are looking for.  */
+          aejson_value_t *value = p->value;
           if(!query->next)
           {
                *out = value;
                return true;
           }
 
-          /* We have a match but it's not an object and the query
-           * isn't exhausted...so this is a failed search. */
+          while(query->next
+                && (query->next->type == AEJSON_NODE_TYPE_INDEX))
+          {
+               AE_TRY(aejson_object_value_from_array(
+                           e, value, query->next->index, &value));
+               query = query->next;
+          }
+          
+          /* Nothing left in the query */
+          if(!query->next)
+          {
+               AE_LD("search success");
+               *out = value;
+               return true;
+          }
+
+          
           if(value->type != AEJSON_VALUE_TYPE_OBJECT)
           {
-               ae_res_err(e, "search failed");
+               ae_res_err(e, "expecting object but saw %s",
+                          aejson_value_type_to_string(value->type));
                return false;
           }
-          /* Descend into the object, yay for recursion  */
-          return aejson_object_find_internal(e, value->object, query->next, out);
+          return aejson_object_find_internal(e, value->object,
+                                             query->next, out);
      }
+     
      ae_res_err(e, "no matches found");
      return false;
 }
@@ -134,12 +143,21 @@ static bool aejson_object_finds(ae_res_t *e, aejson_object_t *self,
      aejson_node_t *query = NULL;
      AE_TRY(aejson_query_parse(e, &query_parser, pool, path, &query));
 
-     printf("query parsed:\n");
-     for(aejson_node_t *i = query; i != NULL; i=i->next)
-     {
-          printf("%s:%"PRId64"\n", i->name, i->index);
-     }
-
+     /* printf("query parsed:\n"); */
+     /* for(aejson_node_t *i = query; i != NULL; i=i->next) */
+     /* { */
+     /*      switch(i->type) */
+     /*      { */
+     /*      case AEJSON_NODE_TYPE_INDEX: */
+     /*           printf("[%"PRId64"]\n", i->index); */
+     /*           break; */
+     /*      case AEJSON_NODE_TYPE_ID: */
+     /*           printf("%s:\n", i->id); */
+     /*           break; */
+     /*      default: */
+     /*           break; */
+     /*      } */
+     /* } */
      AE_TRY(aejson_object_find_internal(e, self, query, out));
      return true;
 }
@@ -150,7 +168,7 @@ bool aejson_object_find(ae_res_t *e, aejson_object_t *self,
                         const char *fmt, ...)
 {
      MAKE_PATH;
-     AE_LD("query: (%s)", path);
+     /* AE_LD("query: (%s)", path); */
      AE_TRY(aejson_object_finds(e, self, pool, out, path));
      return true;
 }

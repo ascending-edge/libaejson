@@ -17,7 +17,9 @@ struct aejson_query;
 #define P_TRY(expr) if(!(expr)) { YYABORT; }
 }
 %union {
-     struct aejson_node *node;
+     aejson_node_t *node;
+     uint64_t index;
+     char *str;
 }
 
 %{
@@ -46,23 +48,65 @@ struct aejson_query;
 %lex-param {struct aejson_query *parser}
 
 
-%token t_node
-%type <node> query t_node
-
+%token t_id t_index
+%type <node> index indices node id query
+%type <index> t_index
+%type <str> t_id
 %% 
 
-query
-: t_node
+start
+: query
 {
-     parser->result = $$;
-}
-| query t_node
-{
-     P_TRY(aejson_query_node_append(parser, $2));
-     parser->result = $$;
+     parser->result = $1;
 }
 ;
 
+query
+: node
+| node '.' query
+{
+     P_TRY(aejson_query_node_append(parser, $3));
+     $$ = $1;
+}
+;
+
+node
+: id indices
+{
+     $1->next = $2;
+     $$ = $1;
+}
+| id 
+;
+
+id
+: t_id
+{
+     P_TRY(ae_pool_alloc(parser->e, parser->pool, &$$, sizeof(*$$)));
+     $$->next = NULL;
+     $$->type = AEJSON_NODE_TYPE_ID;
+     $$->id = $1;
+}
+;
+
+indices
+: index
+| index indices
+{
+     $1->next = $2;
+     $$ = $1;
+}
+;
+
+index
+: t_index
+{
+     P_TRY(ae_pool_alloc(parser->e, parser->pool, &$$, sizeof(*$$)));
+     $$->next = NULL;
+     $$->type = AEJSON_NODE_TYPE_INDEX;
+     $$->index = $1;
+}
+;
 
 %%
 #include <stdio.h>

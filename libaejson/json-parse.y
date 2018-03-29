@@ -71,17 +71,21 @@ struct aejson_parser;
 
 %% 
 
+start
+: object
+{
+     parser->result = $1;
+}
+;
 
 object
 : '{' '}'
 {
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
-     parser->result = $$;
 }
 | '{' members '}'
 {
      $$ = $2;
-     parser->result = $$;
 }
 ;
 

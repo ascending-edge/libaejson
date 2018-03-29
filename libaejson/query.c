@@ -41,8 +41,6 @@ bool aejson_query_parse(ae_res_t *e, aejson_query_t *self,
      self->pool = pool;
      self->e = e;
      self->result = NULL;
-     AE_TRY(aejson_query_node_new(self));
-     
 
      AE_TRY(aejson_strlit_cfg(e, &self->strlit, pool));
      
@@ -87,31 +85,13 @@ bool aejson_query_strlit_end(aejson_query_t *self,
 }
 
 
-bool aejson_query_node_new(aejson_query_t *self)
-{
-     AE_TRY(ae_pool_alloc(self->e, self->pool,
-                          &self->node, sizeof(*self->node)));
-     self->node->index = -1;
-     self->node->name = NULL;
-     self->node->next = NULL;
-
-     if(!self->last_node)
-     {
-          self->last_node = self->node;
-     }
-     return true;
-}
-
-
 bool aejson_query_node_append(aejson_query_t *self,
                               aejson_node_t *node)
 {
-     if(!self->last_node)
+     if(self->last_node)
      {
-          ae_res_err(self->e, "internal error: no last node?");
-          return false;
+          self->last_node->next = node;
      }
-     self->last_node->next = node;
      self->last_node = node;
      return true;
 }
