@@ -45,9 +45,21 @@ void jerror(QLTYPE *loc, void *scanner, struct aejson_query *parser,
 		(YYSTYPE * yylval_param, YYLTYPE *loc, yyscan_t yyscanner, \
            struct aejson_query *parser)
 
-#define YY_USER_ACTION loc->first_line = loc->last_line = yylineno; \
-    loc->first_column = yycolumn; loc->last_column = yycolumn + yyleng - 1; \
-    yycolumn += yyleng;
+#define YY_USER_ACTION \
+     loc->first_line = loc->last_line;    \
+loc->first_column = loc->last_column;     \
+for(int i = 0; yytext[i] != '\0'; i++)    \
+{                                         \
+     if(yytext[i] == '\n')                \
+     {                                    \
+          loc->last_line++;               \
+          loc->last_column = 0;           \
+     }                                    \
+     else                                 \
+     {                                    \
+          loc->last_column++;             \
+     }                                    \
+}
 
 %}
 
@@ -135,8 +147,8 @@ HEXCHAR [0123456789abcdef]
           }
           break;
      case '.':
-          unput('.');
           BEGIN(BREAK);
+          unput('.');
           if(parser->strlit.len)
           {
                L_TRY(aejson_query_strlit_end(parser, loc, &yylval->str));

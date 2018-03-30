@@ -87,6 +87,7 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
      {
           aejson_pair_t *p = ae_ptrarray_at(&self->members, i);
 
+          AE_LD("comparing %s to %s", query->id, p->name);
           bool res = strcmp(query->id, p->name) == 0;
           /* no match, so try the next pair in the object */
           if(!res)
@@ -96,6 +97,7 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
           aejson_value_t *value = p->value;
           if(!query->next)
           {
+               AE_LD("no more query");
                *out = value;
                return true;
           }
@@ -123,8 +125,7 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
                           aejson_value_type_to_string(value->type));
                return false;
           }
-          return aejson_object_find_internal(e, value->object,
-                                             query->next, out);
+          return aejson_object_find_internal(e, value->object, query->next, out);
      }
      
      ae_res_err(e, "no matches found");
@@ -143,21 +144,21 @@ static bool aejson_object_finds(ae_res_t *e, aejson_object_t *self,
      aejson_node_t *query = NULL;
      AE_TRY(aejson_query_parse(e, &query_parser, pool, path, &query));
 
-     /* printf("query parsed:\n"); */
-     /* for(aejson_node_t *i = query; i != NULL; i=i->next) */
-     /* { */
-     /*      switch(i->type) */
-     /*      { */
-     /*      case AEJSON_NODE_TYPE_INDEX: */
-     /*           printf("[%"PRId64"]\n", i->index); */
-     /*           break; */
-     /*      case AEJSON_NODE_TYPE_ID: */
-     /*           printf("%s:\n", i->id); */
-     /*           break; */
-     /*      default: */
-     /*           break; */
-     /*      } */
-     /* } */
+     printf("query parsed:\n");
+     for(aejson_node_t *i = query; i != NULL; i=i->next)
+     {
+          switch(i->type)
+          {
+          case AEJSON_NODE_TYPE_INDEX:
+               printf("[%"PRId64"]\n", i->index);
+               break;
+          case AEJSON_NODE_TYPE_ID:
+               printf("%s:\n", i->id);
+               break;
+          default:
+               break;
+          }
+     }
      AE_TRY(aejson_object_find_internal(e, self, query, out));
      return true;
 }

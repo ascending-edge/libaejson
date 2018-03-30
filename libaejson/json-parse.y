@@ -273,6 +273,6 @@ void jerror(JLTYPE *loc, void *scanner, struct aejson_parser *self,
      char msg[2048];
      AE_STR_FROM_ARGS(msg, sizeof(msg), fmt);
      aejson_parser_error_set(self, loc,
-                             "%zd:%zd %s",
+                             "%d:%d %s",
                              loc->first_line, loc->first_column, msg);
 }

@@ -30,7 +30,19 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
      {
           aejson_object_dump(result, 0, stdout);
           aejson_value_t *val = NULL;
-          if(!aejson_object_find(e, result, &pool, &val, "a"))
+          //const char *query = "a[0][0][2][3].b";
+          /* const char *query = "a.b.cd"; */
+
+          //FAILURE
+          const char *query = "   .";
+          /* const char *query = "."; */
+          
+          /* Location error! */
+          /* const char *query = "[0]"; */
+
+          /* const char *query = "a.a[1]"; */
+          AE_LD("query=(%s)", query);
+          if(!aejson_object_find(e, result, &pool, &val, query))
           {
                res = false;
           }

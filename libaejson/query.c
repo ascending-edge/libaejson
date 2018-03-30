@@ -88,10 +88,17 @@ bool aejson_query_strlit_end(aejson_query_t *self,
 bool aejson_query_node_append(aejson_query_t *self,
                               aejson_node_t *node)
 {
+     /// @todo do this more efficiently...
+     aejson_node_t *in_last_node = node;
+     while(in_last_node->next)
+     {
+          in_last_node = in_last_node->next;
+     }
+     
      if(self->last_node)
      {
-          self->last_node->next = node;
+          self->last_node->next = in_last_node;
      }
-     self->last_node = node;
+     self->last_node = in_last_node;
      return true;
 }
