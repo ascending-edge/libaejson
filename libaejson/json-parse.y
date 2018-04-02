@@ -52,6 +52,13 @@ struct aejson_parser;
 %lex-param {struct aejson_parser *parser}
 %parse-param {void *scanner}
 %parse-param {struct aejson_parser *parser}
+%initial-action {
+     @$.first_line = 1;
+     @$.first_column = 0;
+     @$.last_line = 1;
+     @$.last_column = 0;
+}
+
 
 %token t_bool
 %token t_null
@@ -81,10 +88,18 @@ start
 object
 : '{' '}'
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @2.last_line;
+     @$.last_column = @2.last_column;
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
 }
 | '{' members '}'
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
      $$ = $2;
 }
 ;
@@ -93,6 +108,10 @@ object
 pair
 : t_string ':' value
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
      P_TRY(ae_pool_calloc(parser->e, parser->pool, &$$, sizeof(*$$)));
      $$->name = $1;
      $$->value = $3;
@@ -109,6 +128,10 @@ members
 }
 | members ',' pair
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
      /* Should I use a linked list instead? */
      $$ = $1;
      P_TRY(aejson_object_pair_add(parser->e, $1, $3));
@@ -119,12 +142,22 @@ members
 array
 : '[' ']'
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @2.last_line;
+     @$.last_column = @2.last_column;
+     
      $$ = NULL;
      $$->dimension = 0;
      aejson_parser_value_pop(parser);
 }
 | '[' elements ']'
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+
      $$ = $2;
      $$->dimension = parser->value_stack->dimension;
      aejson_parser_value_pop(parser);
@@ -139,6 +172,11 @@ elements
 }
 | elements ',' value
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      P_TRY(aejson_parser_value_append(parser, $3));
      $$ = $1;
 }
@@ -192,10 +230,20 @@ value
 int_expression
 : int_expression '+' int_term
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      $$ = $1 + $3;
 }
 | int_expression '-' int_term
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      $$ = $1 - $3;
 }
 | int_term
@@ -204,10 +252,20 @@ int_expression
 int_term
 : int_term '*' int_factor
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      $$ = $1 * $3;
 }
 | int_term '/' int_factor
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      $$ = $1 / $3;
 }
 | int_factor
@@ -216,10 +274,20 @@ int_term
 int_factor
 : '(' int_expression  ')'
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      $$ = $2;
 }
 | '-' int_factor
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @2.last_line;
+     @$.last_column = @2.last_column;
+     
      $$ = -$2;
 }
 | t_integer
@@ -228,10 +296,20 @@ int_factor
 expression
 : expression '+' term
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      $$ = $1 + $3;
 }
 | expression '-' term
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      $$ = $1 - $3;
 }
 | term
@@ -240,10 +318,19 @@ expression
 term
 : term '*' factor
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
+     
      $$ = $1 * $3;
 }
 | term '/' factor
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
      $$ = $1 / $3;
 }
 | factor
@@ -252,10 +339,19 @@ term
 factor
 : '(' expression  ')'
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @3.last_line;
+     @$.last_column = @3.last_column;
      $$ = $2;
 }
 | '-' factor
 {
+     @$.first_line = @1.first_line;
+     @$.first_column = @1.first_column;
+     @$.last_line = @2.last_line;
+     @$.last_column = @2.last_column;
+     
      $$ = -$2;
 }
 | t_float

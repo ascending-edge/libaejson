@@ -42,7 +42,23 @@ void jerror(JLTYPE *loc, void *scanner, struct aejson_parser *parser,
 /* #define YY_USER_ACTION loc->first_line = loc->last_line = yylineno;\ */
 /*     loc->first_column = yycolumn; loc->last_column = yycolumn + yyleng - 1; \ */
 /*     yycolumn += yyleng; */
-#define YY_USER_ACTION LOC_USER_ACTION
+/* #define YY_USER_ACTION LOC_USER_ACTION */
+#define YY_USER_ACTION \
+     loc->first_line = loc->last_line;    \
+loc->first_column = loc->last_column;     \
+for(int i = 0; yytext[i] != '\0'; i++)    \
+{                                         \
+     if(yytext[i] == '\n')                \
+     {                                    \
+          loc->last_line++;               \
+          loc->last_column = 0;           \
+     }                                    \
+     else                                 \
+     {                                    \
+          loc->last_column++;             \
+     }                                    \
+}
+
 %}
 
 

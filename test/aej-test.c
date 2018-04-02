@@ -34,8 +34,8 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
           /* const char *query = "a.b.cd"; */
 
           //FAILURE
-          const char *query = "   .";
-          /* const char *query = "."; */
+          /* const char *query = "   ."; */
+          const char *query = ".";
           
           /* Location error! */
           /* const char *query = "[0]"; */

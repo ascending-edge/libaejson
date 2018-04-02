@@ -49,9 +49,9 @@ struct aejson_query;
 %lex-param {struct aejson_query *parser}
 %initial-action {
      @$.first_line = 1;
-     @$.first_column = 1;
+     @$.first_column = 0;
      @$.last_line = 1;
-     @$.last_column = 1;
+     @$.last_column = 0;
 }
 
 %token t_id t_index
