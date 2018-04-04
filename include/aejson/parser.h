@@ -12,11 +12,15 @@
 #include <aejson/object.h>
 #include <aejson/strlit.h>
 
+/**
+ * Stack nodes are used internally for keeping track of
+ * multi-dimensional arrays.
+ */
 typedef struct stack_node
 {
-     struct stack_node *next;
-     size_t dimension;
-     aejson_value_t *value;
+     struct stack_node *next;   /**< the stack is a linked list */
+     size_t dimension;          /**< dimension of current node/value */
+     aejson_value_t *value;     /**< current node */
 } stack_node_t;
 
 
@@ -34,7 +38,9 @@ typedef struct aejson_parser
      aejson_strlit_t strlit;    /**< used by the scanner to build
                                  * extract string literals */
 
-     stack_node_t *value_stack;
+     stack_node_t *value_stack; /**< this stack is used for keeping
+                                 * track of multi-dimensional
+                                 * arrays */
 } aejson_parser_t;
 
 
@@ -43,7 +49,7 @@ extern "C" {
 #endif
 
      /** 
-      * initializes
+      * initializes the parser
       */
      bool aejson_parser_init(ae_res_t *e, aejson_parser_t *self);
 
@@ -143,11 +149,30 @@ extern "C" {
                                    char **out);
 
 
+     /** 
+      * This is called when a value needs to be appended to the top of
+      * the stack.  This is called by the parser.
+      *
+      * @param value what to append
+      */
      bool aejson_parser_value_append(aejson_parser_t *self,
                                      aejson_value_t *value);
 
+     /** 
+      * This should be called when a value needs to be pushed (create
+      * a new level in the stack).  This is called by the parser.
+      *
+      * @param value 
+      *
+      * @return 
+      */
      bool aejson_parser_value_push(aejson_parser_t *self,
                                    aejson_value_t *value);
+
+     /** 
+      * This should be called when leaving a level.  This is called by
+      * the parser.
+      */
      bool aejson_parser_value_pop(aejson_parser_t *self);
 
 #ifdef __cplusplus

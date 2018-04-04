@@ -87,7 +87,7 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
      {
           aejson_pair_t *p = ae_ptrarray_at(&self->members, i);
 
-          AE_LD("comparing %s to %s", query->id, p->name);
+          /* AE_LD("comparing %s to %s", query->id, p->name); */
           bool res = strcmp(query->id, p->name) == 0;
           /* no match, so try the next pair in the object */
           if(!res)
@@ -97,7 +97,6 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
           aejson_value_t *value = p->value;
           if(!query->next)
           {
-               AE_LD("no more query");
                *out = value;
                return true;
           }
@@ -113,7 +112,6 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
           /* Nothing left in the query */
           if(!query->next)
           {
-               AE_LD("search success");
                *out = value;
                return true;
           }
@@ -121,7 +119,8 @@ static bool aejson_object_find_internal(ae_res_t *e, aejson_object_t *self,
           
           if(value->type != AEJSON_VALUE_TYPE_OBJECT)
           {
-               ae_res_err(e, "expecting object but saw %s",
+               ae_res_err(e, "expecting object at %s but saw %s",
+                          query->id,
                           aejson_value_type_to_string(value->type));
                return false;
           }
@@ -144,21 +143,21 @@ static bool aejson_object_finds(ae_res_t *e, aejson_object_t *self,
      aejson_node_t *query = NULL;
      AE_TRY(aejson_query_parse(e, &query_parser, pool, path, &query));
 
-     printf("query parsed:\n");
-     for(aejson_node_t *i = query; i != NULL; i=i->next)
-     {
-          switch(i->type)
-          {
-          case AEJSON_NODE_TYPE_INDEX:
-               printf("[%"PRId64"]\n", i->index);
-               break;
-          case AEJSON_NODE_TYPE_ID:
-               printf("%s:\n", i->id);
-               break;
-          default:
-               break;
-          }
-     }
+     /* printf("query parsed:\n"); */
+     /* for(aejson_node_t *i = query; i != NULL; i=i->next) */
+     /* { */
+     /*      switch(i->type) */
+     /*      { */
+     /*      case AEJSON_NODE_TYPE_INDEX: */
+     /*           printf("[%"PRId64"]\n", i->index); */
+     /*           break; */
+     /*      case AEJSON_NODE_TYPE_ID: */
+     /*           printf("%s:\n", i->id); */
+     /*           break; */
+     /*      default: */
+     /*           break; */
+     /*      } */
+     /* } */
      AE_TRY(aejson_object_find_internal(e, self, query, out));
      return true;
 }
@@ -198,7 +197,7 @@ bool aejson_object_find_int64(ae_res_t *e, aejson_object_t *self,
                               const char *fmt, ...)
 {
      MAKE_PATH;
-     AE_LD("query: (%s)", path);
+     /* AE_LD("query: (%s)", path); */
      aejson_value_t *val = NULL;
      AE_TRY(aejson_object_find_type(e, self, pool, &val,
                                     AEJSON_VALUE_TYPE_INTEGER, path));
@@ -212,7 +211,7 @@ bool aejson_object_find_double(ae_res_t *e, aejson_object_t *self,
                               const char *fmt, ...)
 {
      MAKE_PATH;
-     AE_LD("query: (%s)", path);
+     /* AE_LD("query: (%s)", path); */
      aejson_value_t *val = NULL;
      AE_TRY(aejson_object_find_type(e, self, pool, &val,
                                     AEJSON_VALUE_TYPE_DOUBLE, path));
@@ -229,11 +228,11 @@ bool aejson_object_find_array_int64(ae_res_t *e, aejson_object_t *self,
                                     const char *fmt, ...)
 {
      MAKE_PATH;
-     AE_LD("query: (%s)", path);
+     /* AE_LD("query: (%s)", path); */
      aejson_value_t *val = NULL;
      AE_TRY(aejson_object_find_type(e, self, pool, &val,
                                     AEJSON_VALUE_TYPE_ARRAY, path));
-     AE_LD("%zu", val->array->dimension);
+     /* AE_LD("%zu", val->array->dimension); */
      size_t len_bytes = val->array->dimension * sizeof(**out);
      *out_len = val->array->dimension;
      AE_TRY(ae_pool_alloc(e, pool, out, len_bytes));
@@ -265,11 +264,11 @@ bool aejson_object_find_array_double(ae_res_t *e, aejson_object_t *self,
                                      const char *fmt, ...)
 {
      MAKE_PATH;
-     AE_LD("query: (%s)", path);
+     /* AE_LD("query: (%s)", path); */
      aejson_value_t *val = NULL;
      AE_TRY(aejson_object_find_type(e, self, pool, &val,
                                     AEJSON_VALUE_TYPE_ARRAY, path));
-     AE_LD("%zu", val->array->dimension);
+     /* AE_LD("%zu", val->array->dimension); */
      size_t len_bytes = val->array->dimension * sizeof(**out);
      *out_len = val->array->dimension;
      AE_TRY(ae_pool_alloc(e, pool, out, len_bytes));

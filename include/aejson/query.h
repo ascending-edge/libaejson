@@ -23,7 +23,9 @@ typedef struct aejson_query
 
      aejson_node_t *result;     /**< The parse result is stored here */
 
-     aejson_node_t *last_node;
+     aejson_node_t *last_node;  /**< This keeps track of the last node
+                                 * in a linked list as an optimization
+                                 * for appending to a linked list. */
 } aejson_query_t;
 
 #ifdef __cplusplus

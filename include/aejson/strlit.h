@@ -22,6 +22,7 @@ typedef struct aejson_strlit
      char *str;                 /**< the string */
 } aejson_strlit_t;
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -33,13 +33,14 @@ typedef struct aejson_value
 {
      struct aejson_value *next; /**< linked list... */
      aejson_value_type_t type;  /**< What is stored here */
-     size_t dimension;
+     size_t dimension;          /**< array length */
      union {
           bool boolean;          
           char *str;
           double dbl;
           int64_t integer;
-          void *object;
+          void *object;         /**< This is void* to avoid a circular
+                                 * dependency. */
           struct aejson_value *array;
      };
 } aejson_value_t;

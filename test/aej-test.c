@@ -29,27 +29,28 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
      if(res)
      {
           aejson_object_dump(result, 0, stdout);
-          aejson_value_t *val = NULL;
-          //const char *query = "a[0][0][2][3].b";
+          /* aejson_value_t *val = NULL; */
+          int64_t val = 0;
+          const char *query = "a[0][1].b.c";
+          /* const char *query = "a[0][0][2][3].b"; */
           /* const char *query = "a.b.cd"; */
 
           //FAILURE
-          /* const char *query = "   ."; */
-          const char *query = ".";
+          //const char *query = "   .";
+          /* const char *query = "."; */
           
           /* Location error! */
           /* const char *query = "[0]"; */
-
           /* const char *query = "a.a[1]"; */
           AE_LD("query=(%s)", query);
-          if(!aejson_object_find(e, result, &pool, &val, query))
+          if(!aejson_object_find_int64(e, result, &pool, &val, query))
           {
                res = false;
           }
           else
           {
                printf("--found--\n");
-               aejson_value_dump(val, 0, stdout);
+               /* aejson_value_dump(val, 0, stdout); */
                printf("\n---------\n");
           }
      }

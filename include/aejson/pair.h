@@ -12,7 +12,8 @@
 
 
 /**
- * This class represents a pair contained in a json object.
+ * This class represents a pair contained in a json object.  Objects
+ * are made up of zero or more pairs.
  */
 typedef struct aejson_pair
 {

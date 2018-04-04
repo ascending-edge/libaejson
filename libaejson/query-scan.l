@@ -45,22 +45,22 @@ void jerror(QLTYPE *loc, void *scanner, struct aejson_query *parser,
 		(YYSTYPE * yylval_param, YYLTYPE *loc, yyscan_t yyscanner, \
            struct aejson_query *parser)
 
-#define YY_USER_ACTION \
-     loc->first_line = loc->last_line;    \
-loc->first_column = loc->last_column;     \
-for(int i = 0; yytext[i] != '\0'; i++)    \
-{                                         \
-     if(yytext[i] == '\n')                \
-     {                                    \
-          loc->last_line++;               \
-          loc->last_column = 0;           \
-     }                                    \
-     else                                 \
-     {                                    \
-          loc->last_column++;             \
-     }                                    \
-}
-
+/* #define YY_USER_ACTION \ */
+/*      loc->first_line = loc->last_line;    \ */
+/* loc->first_column = loc->last_column;     \ */
+/* for(int i = 0; yytext[i] != '\0'; i++)    \ */
+/* {                                         \ */
+/*      if(yytext[i] == '\n')                \ */
+/*      {                                    \ */
+/*           loc->last_line++;               \ */
+/*           loc->last_column = 0;           \ */
+/*      }                                    \ */
+/*      else                                 \ */
+/*      {                                    \ */
+/*           loc->last_column++;             \ */
+/*      }                                    \ */
+/* } */
+#define YY_USER_ACTION LOC_USER_ACTION
 %}
 
 DOT \.
@@ -81,8 +81,9 @@ HEXCHAR [0123456789abcdef]
 }
 
 
-<BREAK>{DOT} {
+<BREAK>. {
      BEGIN(INITIAL);
+     unput(yytext[0]);
      return '.';
 }
 
@@ -148,7 +149,7 @@ HEXCHAR [0123456789abcdef]
           break;
      case '.':
           BEGIN(BREAK);
-          unput('.');
+          /* unput('.'); */
           if(parser->strlit.len)
           {
                L_TRY(aejson_query_strlit_end(parser, loc, &yylval->str));

@@ -3,7 +3,7 @@
  * 
  * Copyright (C) 2018 Ascending Edge, LLC - All Rights Reserved
  *
- * Users of the library can include this single header file for
+ * Users of the libaejson can include this single header file for
  * convenience.
  */
 #ifndef _AEJSON_H

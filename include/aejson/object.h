@@ -13,7 +13,10 @@
 
 
 /**
- * A parsed json object
+ * A parsed json object.  This is a pointer array of aejson_pair_t
+ * objects.  A pair consists of a name and a value.
+ *
+ * The parser returns one object.
  */
 typedef struct aejson_object
 {
@@ -73,6 +76,18 @@ extern "C" {
 #endif          
           ;
 
+     /** 
+      * Finds an integer, returns an error if not found or if the
+      * value is not an integer.
+      *
+      * @param pool pool used for parsing query string
+      * 
+      * @param out if found this contains the integer located at the
+      * specified path.
+      *
+      * @param fmt printf style format string which specifies the
+      * query path.
+      */
      bool aejson_object_find_int64(ae_res_t *e, aejson_object_t *self,
                                    ae_pool_t *pool, int64_t *out,
                                    const char *fmt, ...)
@@ -90,6 +105,21 @@ extern "C" {
           ;
 
 
+     /** 
+      * Finds an integer array.  An error is returned if not found or
+      * if any of the array members are not integers.  An array is
+      * allocated of sufficient size from @p pool.  To cleanup the
+      * memory free the pool.
+      *
+      * @param pool where to allocate from for both the query parsing
+      * as well as the output array.
+      * 
+      * @param out_len the number of integers in the output array
+      * 
+      * @param out the output array
+      * 
+      * @param fmt printf style format which specifies the query path
+      */
      bool aejson_object_find_array_int64(ae_res_t *e, aejson_object_t *self,
                                          ae_pool_t *pool,
                                          size_t *out_len,
@@ -100,6 +130,21 @@ extern "C" {
 #endif          
           ;
 
+     /** 
+      * Finds a double array.  An error is returned if not found or if
+      * any of the array members are not doubles.  An array is
+      * allocated of sufficient size from @p pool.  To cleanup the
+      * memory free the pool.
+      *
+      * @param pool where to allocate from for both the query parsing
+      * as well as the output array.
+      * 
+      * @param out_len the number of integers in the output array
+      * 
+      * @param out the output array
+      * 
+      * @param fmt printf style format which specifies the query path
+      */
      bool aejson_object_find_array_double(ae_res_t *e, aejson_object_t *self,
                                           ae_pool_t *pool,
                                           size_t *out_len,
