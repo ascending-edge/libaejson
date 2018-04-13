@@ -1,9 +1,11 @@
 {
+    "s":["one","two","three"],
+    "a":{"b":{"c":"howdy partner"}},
     "one":[[1,2,3],1,2,3,4,5,6],
-    "wtf":"three four five",
-    "a":<<<
+    "wtf":"three four five hello",
+    "heredoc":<<<
 three 
 four 
-five    
+five
 >>>
 }

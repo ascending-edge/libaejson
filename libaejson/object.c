@@ -206,6 +206,19 @@ bool aejson_object_find_int64(ae_res_t *e, aejson_object_t *self,
 }
 
 
+bool aejson_object_find_string(ae_res_t *e, aejson_object_t *self,
+                               ae_pool_t *pool, char **out,
+                               const char *fmt, ...)
+{
+     MAKE_PATH;
+     aejson_value_t *val = NULL;
+     AE_TRY(aejson_object_find_type(e, self, pool, &val,
+                                    AEJSON_VALUE_TYPE_STRING, path));
+     *out = val->str;
+     return true;
+}
+
+
 bool aejson_object_find_double(ae_res_t *e, aejson_object_t *self,
                               ae_pool_t *pool, double *out,
                               const char *fmt, ...)
@@ -249,6 +262,42 @@ bool aejson_object_find_array_int64(ae_res_t *e, aejson_object_t *self,
                return false;
           }
           *out_iter = iter->integer;
+          ++out_iter;
+          iter = iter->next;
+     }
+
+     return true;
+}
+
+
+bool aejson_object_find_array_string(ae_res_t *e, aejson_object_t *self,
+                                    ae_pool_t *pool,
+                                    size_t *out_len,
+                                    char ***out,
+                                    const char *fmt, ...)
+{
+     MAKE_PATH;
+     /* AE_LD("query: (%s)", path); */
+     aejson_value_t *val = NULL;
+     AE_TRY(aejson_object_find_type(e, self, pool, &val,
+                                    AEJSON_VALUE_TYPE_ARRAY, path));
+     /* AE_LD("%zu", val->array->dimension); */
+     size_t len_bytes = val->array->dimension * sizeof(**out);
+     *out_len = val->array->dimension;
+     AE_TRY(ae_pool_alloc(e, pool, out, len_bytes));
+
+     aejson_value_t *iter = val->array;
+     char **out_iter = *out;
+     for(size_t i=0; i<val->array->dimension; ++i)
+     {
+          if(iter->type != AEJSON_VALUE_TYPE_STRING)
+          {
+               ae_res_err(e, "type mismatch, "
+                          "expecting string but saw %s at index %zu",
+                          aejson_value_type_to_string(iter->type), i);
+               return false;
+          }
+          *out_iter = iter->str;
           ++out_iter;
           iter = iter->next;
      }

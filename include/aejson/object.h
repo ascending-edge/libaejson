@@ -70,12 +70,29 @@ extern "C" {
       */
      bool aejson_object_find(ae_res_t *e, aejson_object_t *self,
                              ae_pool_t *pool, aejson_value_t **out,
-                             const char *fmt, ...)
-#ifdef __GNUC__
-          __attribute__((format (printf, 5, 6)))
-#endif          
-          ;
+                             const char *fmt, ...) AE_PRINTF_ARGS(5,6);
 
+
+     /** 
+      * Finds an string, returns an error if not found or if the value
+      * is not a string.  The string is NOT copied.  The output string
+      * is owned by the object and will become invalidated when the
+      * pool associated with the aejson_object is freed.
+      *
+      * @param pool pool used for parsing query string
+      * 
+      * @param out if found this contains the integer located at the
+      * specified path.
+      *
+      * @param fmt printf style format string which specifies the
+      * query path.
+      */
+     bool aejson_object_find_string(ae_res_t *e, aejson_object_t *self,
+                                    ae_pool_t *pool, char **out,
+                                    const char *fmt, ...) AE_PRINTF_ARGS(5,6);
+
+
+     
      /** 
       * Finds an integer, returns an error if not found or if the
       * value is not an integer.
@@ -90,19 +107,36 @@ extern "C" {
       */
      bool aejson_object_find_int64(ae_res_t *e, aejson_object_t *self,
                                    ae_pool_t *pool, int64_t *out,
-                                   const char *fmt, ...)
-#ifdef __GNUC__
-          __attribute__((format (printf, 5, 6)))
-#endif          
-          ;
+                                   const char *fmt, ...) AE_PRINTF_ARGS(5,6);
+
 
      bool aejson_object_find_double(ae_res_t *e, aejson_object_t *self,
                                    ae_pool_t *pool, double *out,
-                                   const char *fmt, ...)
-#ifdef __GNUC__
-          __attribute__((format (printf, 5, 6)))
-#endif          
-          ;
+                                   const char *fmt, ...) AE_PRINTF_ARGS(5,6);
+
+
+     /** 
+      * Finds a string array.  An error is returned if not found or if
+      * any of the array members are not strings.  An array is
+      * allocated of sufficient size from @p pool.  To cleanup the
+      * memory free the pool.  The strings in the array are NOT
+      * copied!
+      *
+      * @param pool where to allocate from for both the query parsing
+      * as well as the output array.
+      * 
+      * @param out_len the number of integers in the output array
+      * 
+      * @param out the output array
+      * 
+      * @param fmt printf style format which specifies the query path
+      */
+     bool aejson_object_find_array_string(ae_res_t *e, aejson_object_t *self,
+                                         ae_pool_t *pool,
+                                         size_t *out_len,
+                                         char ***out,
+                                         const char *fmt, ...)
+          AE_PRINTF_ARGS(6, 7);
 
 
      /** 
@@ -125,10 +159,7 @@ extern "C" {
                                          size_t *out_len,
                                          int64_t **out,
                                          const char *fmt, ...)
-#ifdef __GNUC__
-          __attribute__((format (printf, 6, 7)))
-#endif          
-          ;
+          AE_PRINTF_ARGS(6, 7);
 
      /** 
       * Finds a double array.  An error is returned if not found or if
@@ -150,10 +181,7 @@ extern "C" {
                                           size_t *out_len,
                                           double **out,
                                           const char *fmt, ...)
-#ifdef __GNUC__
-          __attribute__((format (printf, 6, 7)))
-#endif          
-          ;
+          AE_PRINTF_ARGS(6,7);
 
 
 #ifdef __cplusplus

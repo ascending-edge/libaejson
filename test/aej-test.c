@@ -30,8 +30,12 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
      {
           aejson_object_dump(result, 0, stdout);
           /* aejson_value_t *val = NULL; */
-          int64_t val = 0;
-          const char *query = "a[0][1].b.c";
+          /* int64_t val = 0; */
+          char **vals = NULL;
+          size_t vals_len = 0;
+          const char *query = "s";
+          
+          /* const char *query = "a[0][1].b.c"; */
           /* const char *query = "a[0][0][2][3].b"; */
           /* const char *query = "a.b.cd"; */
 
@@ -43,7 +47,8 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
           /* const char *query = "[0]"; */
           /* const char *query = "a.a[1]"; */
           AE_LD("query=(%s)", query);
-          if(!aejson_object_find_int64(e, result, &pool, &val, query))
+          if(!aejson_object_find_array_string(e, result, &pool,
+                                              &vals_len, &vals, query))
           {
                res = false;
           }
@@ -51,7 +56,11 @@ static bool internal_main(ae_res_t *e, int argc, char **argv)
           {
                printf("--found--\n");
                /* aejson_value_dump(val, 0, stdout); */
-               printf("\n---------\n");
+               for(size_t i=0; i<vals_len; ++i)
+               {
+                    printf("sup: %s\n", vals[i]);
+               }
+               printf("---------\n");
           }
      }
      
